@@ -1,0 +1,87 @@
+name: Publish to Framer CMS
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'published/**/*.md'
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install gray-matter marked
+
+      - name: Detect changed files
+        id: changed
+        run: |
+          echo "files<<EOF" >> $GITHUB_OUTPUT
+          git diff --name-only HEAD~1 HEAD -- 'published/**/*.md' >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Publish to Framer CMS
+        env:
+          FRAMER_API_TOKEN: ${{ secrets.FRAMER_API_TOKEN }}
+          FRAMER_SITE_ID: ${{ secrets.FRAMER_SITE_ID }}
+        run: |
+          node << 'SCRIPT'
+          const fs = require('fs');
+          const matter = require('gray-matter');
+          const { marked } = require('marked');
+
+          const files = process.env.CHANGED_FILES?.split('\n').filter(Boolean) || [];
+
+          for (const file of files) {
+            if (!fs.existsSync(file)) continue;
+
+            const raw = fs.readFileSync(file, 'utf8');
+            const { data, content } = matter(raw);
+
+            // Only publish files with status: published
+            if (data.status !== 'published') {
+              console.log(`Skipping ${file} (status: ${data.status})`);
+              continue;
+            }
+
+            const html = marked(content);
+
+            // Determine CMS collection from path
+            let collection = 'blog';
+            if (file.includes('published/letter/')) collection = 'letter';
+            else if (file.includes('published/paths/')) collection = 'paths';
+            else if (file.includes('published/media-kit/')) collection = 'media-kit';
+            else if (file.includes('published/deep-dives/')) collection = 'deep-dives';
+
+            const payload = {
+              slug: data.slug,
+              title: data.title,
+              titleZh: data.title_zh || null,
+              body: html,
+              language: data.language || 'en',
+              date: data.date,
+              tags: data.tags || [],
+              series: data.series || null,
+              ogDescription: data.og_description || '',
+              collection,
+            };
+
+            console.log(`Publishing: ${data.title} → ${collection}/${data.slug}`);
+
+            // TODO: Replace with actual Framer CMS API call
+            // POST https://api.framer.com/v1/sites/{SITE_ID}/cms/collections/{collection}/items
+            // Headers: Authorization: Bearer ${FRAMER_API_TOKEN}
+            // Body: JSON.stringify(payload)
+
+            console.log(JSON.stringify(payload, null, 2));
+          }
+          SCRIPT
+        env:
+          CHANGED_FILES: ${{ steps.changed.outputs.files }}
