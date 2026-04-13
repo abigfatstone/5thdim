@@ -1,0 +1,9 @@
+name = "5thdim-agent"
+main = "src/index.js"
+compatibility_date = "2024-09-23"
+
+[vars]
+ALLOWED_ORIGINS = "https://5thdim.ai,http://localhost:3000"
+MAX_TURNS = 6
+
+# Set these as secrets: wrangler secret put ANTHROPIC_API_KEY

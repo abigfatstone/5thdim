@@ -43,10 +43,14 @@
 - [x] 4.1 Write `.github/workflows/publish.yml` — GitHub Actions stub for Framer CMS sync
 - [x] 4.2 Write `published/README.md` — frontmatter spec and publishing workflow docs
 
-## Phase 5: Framer + Agent Deployment (P3, separate)
+## Phase 5: Framer + Agent Deployment (P3)
 
-- [ ] 5.1 Remix Framer template from provided URL
-- [ ] 5.2 Set up Framer CMS collections (blog, letter, paths)
-- [ ] 5.3 Deploy agent backend (Cloudflare Worker + Claude API)
-- [ ] 5.4 Embed agent chat widget on Framer site
-- [ ] 5.5 Connect GitHub Actions to Framer CMS API
+- [x] 5.1 Write Cloudflare Worker agent backend (`agent/worker/`)
+- [x] 5.2 Write chat widget embed (`agent/widget/chat-widget.html`)
+- [x] 5.3 Write deployment guide (`agent/DEPLOY.md`)
+- [ ] 5.4 Remix Framer template in browser (manual)
+- [ ] 5.5 Set up Framer CMS collections (manual, see DEPLOY.md)
+- [ ] 5.6 Deploy Cloudflare Worker (`cd agent/worker && npm run deploy`)
+- [ ] 5.7 Embed chat widget in Framer (manual, paste code)
+- [ ] 5.8 Set custom domain 5thdim.ai
+- [ ] 5.9 Connect GitHub Actions (add secrets to repo)

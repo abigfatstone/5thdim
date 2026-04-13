@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fifth Dimension Chat Widget</title>
+<style>
+/* =============================================
+   Fifth Dimension Chat Widget
+   Self-contained -- no external dependencies
+   ============================================= */
+
+:root {
+  --5d-cyan: #4db8b8;
+  --5d-cyan-light: #e0f4f4;
+  --5d-cyan-dark: #2a7a7a;
+  --5d-cyan-hover: #3a9e9e;
+  --5d-bg: #ffffff;
+  --5d-bg-secondary: #f5f7f9;
+  --5d-bg-user: #e8f6f6;
+  --5d-text: #1a1a2e;
+  --5d-text-secondary: #5a5a7a;
+  --5d-border: #e2e6ea;
+  --5d-shadow: rgba(0, 0, 0, 0.12);
+  --5d-radius: 12px;
+  --5d-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --5d-cyan: #5cc8c8;
+    --5d-cyan-light: #1a3a3a;
+    --5d-cyan-dark: #7edcdc;
+    --5d-cyan-hover: #4ab8b8;
+    --5d-bg: #161625;
+    --5d-bg-secondary: #1e1e32;
+    --5d-bg-user: #1a3535;
+    --5d-text: #e8e8f0;
+    --5d-text-secondary: #9a9ab0;
+    --5d-border: #2a2a42;
+    --5d-shadow: rgba(0, 0, 0, 0.35);
+  }
+}
+
+/* Reset for widget container */
+#fifthd-widget * {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+#fifthd-widget {
+  font-family: var(--5d-font);
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--5d-text);
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 99999;
+}
+
+/* ---- Chat Bubble ---- */
+
+#fifthd-bubble {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--5d-cyan);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 16px var(--5d-shadow);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  position: relative;
+}
+
+#fifthd-bubble:hover {
+  transform: scale(1.08);
+  box-shadow: 0 6px 24px var(--5d-shadow);
+}
+
+#fifthd-bubble:active {
+  transform: scale(0.96);
+}
+
+#fifthd-bubble svg {
+  width: 26px;
+  height: 26px;
+  fill: #ffffff;
+}
+
+/* Pulse animation on first load */
+@keyframes fifthd-pulse {
+  0% { box-shadow: 0 4px 16px var(--5d-shadow), 0 0 0 0 rgba(77, 184, 184, 0.4); }
+  70% { box-shadow: 0 4px 16px var(--5d-shadow), 0 0 0 16px rgba(77, 184, 184, 0); }
+  100% { box-shadow: 0 4px 16px var(--5d-shadow), 0 0 0 0 rgba(77, 184, 184, 0); }
+}
+
+#fifthd-bubble.fifthd-pulse {
+  animation: fifthd-pulse 2s ease-out 3;
+}
+
+/* Tooltip */
+#fifthd-tooltip {
+  position: absolute;
+  bottom: 64px;
+  right: 0;
+  background: var(--5d-bg);
+  color: var(--5d-text);
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  white-space: nowrap;
+  box-shadow: 0 2px 12px var(--5d-shadow);
+  border: 1px solid var(--5d-border);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+  line-height: 1.4;
+}
+
+#fifthd-tooltip::after {
+  content: '';
+  position: absolute;
+  bottom: -6px;
+  right: 20px;
+  width: 10px;
+  height: 10px;
+  background: var(--5d-bg);
+  border-right: 1px solid var(--5d-border);
+  border-bottom: 1px solid var(--5d-border);
+  transform: rotate(45deg);
+}
+
+#fifthd-bubble:hover + #fifthd-tooltip,
+#fifthd-tooltip:hover {
+  opacity: 1;
+}
+
+/* ---- Chat Panel ---- */
+
+#fifthd-panel {
+  position: fixed;
+  bottom: 96px;
+  right: 24px;
+  width: 400px;
+  height: 600px;
+  max-height: calc(100vh - 120px);
+  background: var(--5d-bg);
+  border-radius: var(--5d-radius);
+  box-shadow: 0 8px 40px var(--5d-shadow);
+  border: 1px solid var(--5d-border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transform: translateY(16px) scale(0.96);
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#fifthd-panel.fifthd-open {
+  transform: translateY(0) scale(1);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Mobile full-screen */
+@media (max-width: 639px) {
+  #fifthd-panel {
+    bottom: 0;
+    right: 0;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    max-height: 100vh;
+    border-radius: 0;
+    border: none;
+  }
+
+  #fifthd-widget {
+    bottom: 16px;
+    right: 16px;
+  }
+}
+
+/* ---- Header ---- */
+
+#fifthd-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--5d-border);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-shrink: 0;
+  background: var(--5d-bg);
+}
+
+#fifthd-header-text h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--5d-text);
+  margin-bottom: 2px;
+}
+
+#fifthd-header-text p {
+  font-size: 12px;
+  color: var(--5d-text-secondary);
+  margin: 0;
+}
+
+#fifthd-close {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  transition: background 0.15s ease;
+  flex-shrink: 0;
+  margin-left: 12px;
+}
+
+#fifthd-close:hover {
+  background: var(--5d-bg-secondary);
+}
+
+#fifthd-close svg {
+  width: 18px;
+  height: 18px;
+  stroke: var(--5d-text-secondary);
+}
+
+/* ---- Messages ---- */
+
+#fifthd-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  scroll-behavior: smooth;
+}
+
+#fifthd-messages::-webkit-scrollbar {
+  width: 4px;
+}
+
+#fifthd-messages::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+#fifthd-messages::-webkit-scrollbar-thumb {
+  background: var(--5d-border);
+  border-radius: 4px;
+}
+
+.fifthd-msg {
+  max-width: 85%;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 14px;
+  line-height: 1.55;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.fifthd-msg-user {
+  align-self: flex-end;
+  background: var(--5d-cyan);
+  color: #ffffff;
+  border-bottom-right-radius: 4px;
+}
+
+.fifthd-msg-assistant {
+  align-self: flex-start;
+  background: var(--5d-bg-secondary);
+  color: var(--5d-text);
+  border-bottom-left-radius: 4px;
+}
+
+/* Markdown styles within assistant messages */
+.fifthd-msg-assistant strong {
+  font-weight: 600;
+}
+
+.fifthd-msg-assistant em {
+  font-style: italic;
+}
+
+.fifthd-msg-assistant code {
+  background: var(--5d-border);
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-family: "SF Mono", "Fira Code", "Consolas", monospace;
+  font-size: 13px;
+}
+
+.fifthd-msg-assistant blockquote {
+  border-left: 3px solid var(--5d-cyan);
+  padding-left: 10px;
+  margin: 6px 0;
+  color: var(--5d-text-secondary);
+}
+
+.fifthd-msg-assistant ul,
+.fifthd-msg-assistant ol {
+  margin: 4px 0;
+  padding-left: 20px;
+}
+
+.fifthd-msg-assistant li {
+  margin-bottom: 2px;
+}
+
+.fifthd-msg-assistant p {
+  margin-bottom: 6px;
+}
+
+.fifthd-msg-assistant p:last-child {
+  margin-bottom: 0;
+}
+
+/* Typing indicator */
+.fifthd-typing {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 12px 16px;
+}
+
+.fifthd-typing-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--5d-text-secondary);
+  opacity: 0.5;
+  animation: fifthd-dot-bounce 1.2s ease-in-out infinite;
+}
+
+.fifthd-typing-dot:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.fifthd-typing-dot:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@keyframes fifthd-dot-bounce {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+  30% { transform: translateY(-5px); opacity: 1; }
+}
+
+/* ---- Input Area ---- */
+
+#fifthd-input-area {
+  padding: 12px 16px;
+  border-top: 1px solid var(--5d-border);
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+  flex-shrink: 0;
+  background: var(--5d-bg);
+}
+
+#fifthd-input {
+  flex: 1;
+  border: 1px solid var(--5d-border);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-family: var(--5d-font);
+  font-size: 14px;
+  color: var(--5d-text);
+  background: var(--5d-bg);
+  resize: none;
+  max-height: 120px;
+  line-height: 1.4;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+#fifthd-input::placeholder {
+  color: var(--5d-text-secondary);
+}
+
+#fifthd-input:focus {
+  border-color: var(--5d-cyan);
+}
+
+#fifthd-send {
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 10px;
+  background: var(--5d-cyan);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+
+#fifthd-send:hover {
+  background: var(--5d-cyan-hover);
+}
+
+#fifthd-send:active {
+  transform: scale(0.94);
+}
+
+#fifthd-send:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+#fifthd-send svg {
+  width: 18px;
+  height: 18px;
+  fill: #ffffff;
+}
+
+/* ---- Powered-by footer ---- */
+#fifthd-footer {
+  text-align: center;
+  padding: 6px 0 10px 0;
+  font-size: 11px;
+  color: var(--5d-text-secondary);
+  flex-shrink: 0;
+  background: var(--5d-bg);
+}
+
+#fifthd-footer a {
+  color: var(--5d-cyan);
+  text-decoration: none;
+}
+
+#fifthd-footer a:hover {
+  text-decoration: underline;
+}
+</style>
+</head>
+<body>
+
+<div id="fifthd-widget">
+  <!-- Chat Bubble -->
+  <button id="fifthd-bubble" class="fifthd-pulse" aria-label="Open chat">
+    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H5.17L4 17.17V4h16v12z"/>
+      <path d="M7 9h10v2H7zm0-3h10v2H7zm0 6h7v2H7z"/>
+    </svg>
+  </button>
+
+  <!-- Tooltip -->
+  <div id="fifthd-tooltip">
+    <span>Ask the Fifth Dimension Guide</span><br>
+    <span style="opacity:0.7">问问第五维度向导</span>
+  </div>
+
+  <!-- Chat Panel -->
+  <div id="fifthd-panel" role="dialog" aria-label="Chat with Fifth Dimension Guide">
+    <div id="fifthd-header">
+      <div id="fifthd-header-text">
+        <h3>Fifth Dimension Guide</h3>
+        <p id="fifthd-subtitle">Ask anything about AI through an Eastern lens</p>
+      </div>
+      <button id="fifthd-close" aria-label="Close chat">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round">
+          <line x1="18" y1="6" x2="6" y2="18"/>
+          <line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <div id="fifthd-messages"></div>
+
+    <div id="fifthd-input-area">
+      <textarea id="fifthd-input" rows="1" placeholder="Ask about the Fifth Dimension..."></textarea>
+      <button id="fifthd-send" aria-label="Send message">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+        </svg>
+      </button>
+    </div>
+
+    <div id="fifthd-footer">
+      Powered by <a href="https://5thdim.ai" target="_blank" rel="noopener">5thdim.ai</a>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  'use strict';
+
+  /* =============================================
+     Configuration
+     ============================================= */
+  const AGENT_URL = 'https://5thdim-agent.YOUR_SUBDOMAIN.workers.dev';
+  const MAX_HISTORY = 10; // max conversation turns to send to API
+  const STORAGE_KEY = '5thdim-chat-history';
+  const EXPIRY_HOURS = 24;
+
+  /* =============================================
+     State
+     ============================================= */
+  var state = {
+    isOpen: false,
+    messages: [],       // { role: 'user'|'assistant', content: string }
+    language: null,     // 'en' | 'zh' | null
+    isStreaming: false,
+    hasShownWelcome: false
+  };
+
+  /* =============================================
+     UI Strings
+     ============================================= */
+  var strings = {
+    en: {
+      subtitle: 'Ask anything about AI through an Eastern lens',
+      placeholder: 'Ask about the Fifth Dimension...',
+      welcome: "Welcome to the Fifth Dimension. I'm an AI guide trained on the book's ideas \u2014 from the Moonlight Box to the Invisible Dragon. What would you like to explore?"
+    },
+    zh: {
+      subtitle: '用东方视角探索AI的一切',
+      placeholder: '关于第五维度，你想问什么...',
+      welcome: "欢迎来到第五维度。我是基于这本书的思想训练的AI向导——从月光宝盒到隐龙。你想探索什么？"
+    }
+  };
+
+  /* =============================================
+     DOM References
+     ============================================= */
+  var bubble = document.getElementById('fifthd-bubble');
+  var panel = document.getElementById('fifthd-panel');
+  var closeBtn = document.getElementById('fifthd-close');
+  var messagesEl = document.getElementById('fifthd-messages');
+  var input = document.getElementById('fifthd-input');
+  var sendBtn = document.getElementById('fifthd-send');
+  var subtitle = document.getElementById('fifthd-subtitle');
+
+  /* =============================================
+     Persistence
+     ============================================= */
+  function saveState() {
+    try {
+      var data = {
+        messages: state.messages,
+        language: state.language,
+        hasShownWelcome: state.hasShownWelcome,
+        timestamp: Date.now()
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    } catch (e) {
+      // localStorage not available, silently continue
+    }
+  }
+
+  function loadState() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return;
+      var data = JSON.parse(raw);
+
+      // Check expiry
+      var age = Date.now() - (data.timestamp || 0);
+      if (age > EXPIRY_HOURS * 60 * 60 * 1000) {
+        localStorage.removeItem(STORAGE_KEY);
+        return;
+      }
+
+      state.messages = data.messages || [];
+      state.language = data.language || null;
+      state.hasShownWelcome = data.hasShownWelcome || false;
+    } catch (e) {
+      localStorage.removeItem(STORAGE_KEY);
+    }
+  }
+
+  /* =============================================
+     Language Detection
+     ============================================= */
+  function detectLanguage(text) {
+    // Check for CJK characters (Chinese, Japanese, Korean)
+    var cjkRegex = /[\u4e00-\u9fff\u3400-\u4dbf\u3000-\u303f\uff00-\uffef]/;
+    var cjkCount = (text.match(/[\u4e00-\u9fff\u3400-\u4dbf]/g) || []).length;
+    // If more than 20% of non-space chars are CJK, treat as Chinese
+    var nonSpace = text.replace(/\s/g, '');
+    if (nonSpace.length > 0 && cjkCount / nonSpace.length > 0.2) {
+      return 'zh';
+    }
+    return 'en';
+  }
+
+  function applyLanguage(lang) {
+    state.language = lang;
+    var s = strings[lang] || strings.en;
+    subtitle.textContent = s.subtitle;
+    input.setAttribute('placeholder', s.placeholder);
+  }
+
+  /* =============================================
+     Markdown Rendering (simple, no external lib)
+     ============================================= */
+  function renderMarkdown(text) {
+    if (!text) return '';
+
+    // Escape HTML
+    var html = text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+
+    // Code blocks (``` ... ```)
+    html = html.replace(/```([\s\S]*?)```/g, function(m, code) {
+      return '<pre><code>' + code.trim() + '</code></pre>';
+    });
+
+    // Inline code
+    html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+
+    // Bold
+    html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+
+    // Italic
+    html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
+
+    // Blockquotes
+    html = html.replace(/^&gt;\s?(.*)$/gm, '<blockquote>$1</blockquote>');
+    // Merge consecutive blockquotes
+    html = html.replace(/<\/blockquote>\n<blockquote>/g, '\n');
+
+    // Unordered lists
+    html = html.replace(/^[\-\*]\s+(.*)$/gm, '<li>$1</li>');
+    html = html.replace(/((?:<li>.*<\/li>\n?)+)/g, '<ul>$1</ul>');
+
+    // Ordered lists
+    html = html.replace(/^\d+\.\s+(.*)$/gm, '<li>$1</li>');
+    // (Ordered items get wrapped in <ul> above for simplicity)
+
+    // Paragraphs: split by double newlines
+    html = html.replace(/\n\n+/g, '</p><p>');
+    // Single newlines to <br> (but not inside block elements)
+    html = html.replace(/\n/g, '<br>');
+
+    // Wrap in paragraph if not already wrapped in a block element
+    if (!html.match(/^<(p|ul|ol|blockquote|pre)/)) {
+      html = '<p>' + html + '</p>';
+    }
+
+    // Clean up empty paragraphs
+    html = html.replace(/<p>\s*<\/p>/g, '');
+
+    return html;
+  }
+
+  /* =============================================
+     Message Rendering
+     ============================================= */
+  function createMessageEl(role, content) {
+    var el = document.createElement('div');
+    el.className = 'fifthd-msg fifthd-msg-' + role;
+    if (role === 'assistant') {
+      el.innerHTML = renderMarkdown(content);
+    } else {
+      // User messages: plain text, preserve newlines
+      el.textContent = content;
+      el.style.whiteSpace = 'pre-wrap';
+    }
+    return el;
+  }
+
+  function createTypingIndicator() {
+    var el = document.createElement('div');
+    el.className = 'fifthd-msg fifthd-msg-assistant fifthd-typing';
+    el.id = 'fifthd-typing';
+    for (var i = 0; i < 3; i++) {
+      var dot = document.createElement('div');
+      dot.className = 'fifthd-typing-dot';
+      el.appendChild(dot);
+    }
+    return el;
+  }
+
+  function renderMessages() {
+    messagesEl.innerHTML = '';
+    for (var i = 0; i < state.messages.length; i++) {
+      var msg = state.messages[i];
+      messagesEl.appendChild(createMessageEl(msg.role, msg.content));
+    }
+    scrollToBottom();
+  }
+
+  function scrollToBottom() {
+    requestAnimationFrame(function() {
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+    });
+  }
+
+  /* =============================================
+     Show Welcome Message
+     ============================================= */
+  function showWelcome() {
+    if (state.hasShownWelcome) return;
+    state.hasShownWelcome = true;
+
+    // Show both languages since we haven't detected user language yet
+    var welcomeEN = strings.en.welcome;
+    var welcomeZH = strings.zh.welcome;
+    var combined = welcomeEN + '\n\n---\n\n' + welcomeZH;
+
+    state.messages.push({ role: 'assistant', content: combined });
+    renderMessages();
+    saveState();
+  }
+
+  /* =============================================
+     Open/Close Panel
+     ============================================= */
+  function openPanel() {
+    state.isOpen = true;
+    panel.classList.add('fifthd-open');
+    bubble.style.display = 'none';
+    document.getElementById('fifthd-tooltip').style.display = 'none';
+
+    // Remove pulse after first open
+    bubble.classList.remove('fifthd-pulse');
+
+    if (!state.hasShownWelcome && state.messages.length === 0) {
+      showWelcome();
+    }
+
+    input.focus();
+  }
+
+  function closePanel() {
+    state.isOpen = false;
+    panel.classList.remove('fifthd-open');
+    bubble.style.display = 'flex';
+    document.getElementById('fifthd-tooltip').style.display = '';
+  }
+
+  /* =============================================
+     Auto-resize textarea
+     ============================================= */
+  function autoResize() {
+    input.style.height = 'auto';
+    input.style.height = Math.min(input.scrollHeight, 120) + 'px';
+  }
+
+  /* =============================================
+     SSE Streaming
+     ============================================= */
+  function sendMessage() {
+    var text = input.value.trim();
+    if (!text || state.isStreaming) return;
+
+    // Detect language from first user message
+    if (!state.language) {
+      var lang = detectLanguage(text);
+      applyLanguage(lang);
+    }
+
+    // Add user message
+    state.messages.push({ role: 'user', content: text });
+    messagesEl.appendChild(createMessageEl('user', text));
+    scrollToBottom();
+
+    // Clear input
+    input.value = '';
+    input.style.height = 'auto';
+    sendBtn.disabled = true;
+    state.isStreaming = true;
+
+    // Show typing indicator
+    var typingEl = createTypingIndicator();
+    messagesEl.appendChild(typingEl);
+    scrollToBottom();
+
+    // Prepare history (limited to MAX_HISTORY turns)
+    var historyToSend = state.messages.slice(-MAX_HISTORY * 2);
+
+    // API request
+    var body = {
+      messages: historyToSend,
+      language: state.language || 'en'
+    };
+
+    fetch(AGENT_URL + '/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    })
+    .then(function(response) {
+      if (!response.ok) {
+        throw new Error('Server responded with ' + response.status);
+      }
+
+      // Remove typing indicator
+      var typing = document.getElementById('fifthd-typing');
+      if (typing) typing.remove();
+
+      // Create assistant message element
+      var assistantContent = '';
+      var assistantEl = createMessageEl('assistant', '');
+      messagesEl.appendChild(assistantEl);
+
+      var reader = response.body.getReader();
+      var decoder = new TextDecoder();
+      var buffer = '';
+
+      function processChunk() {
+        return reader.read().then(function(result) {
+          if (result.done) {
+            // Stream complete
+            state.messages.push({ role: 'assistant', content: assistantContent });
+            state.isStreaming = false;
+            sendBtn.disabled = false;
+            input.focus();
+            saveState();
+            return;
+          }
+
+          buffer += decoder.decode(result.value, { stream: true });
+
+          // Parse SSE events
+          var lines = buffer.split('\n');
+          buffer = lines.pop() || ''; // Keep incomplete line in buffer
+
+          for (var i = 0; i < lines.length; i++) {
+            var line = lines[i].trim();
+
+            if (line.startsWith('data: ')) {
+              var data = line.substring(6);
+
+              if (data === '[DONE]') {
+                continue;
+              }
+
+              try {
+                var parsed = JSON.parse(data);
+                // Handle different SSE payload formats
+                var token = '';
+                if (typeof parsed === 'string') {
+                  token = parsed;
+                } else if (parsed.token) {
+                  token = parsed.token;
+                } else if (parsed.content) {
+                  token = parsed.content;
+                } else if (parsed.choices && parsed.choices[0]) {
+                  var delta = parsed.choices[0].delta;
+                  if (delta && delta.content) {
+                    token = delta.content;
+                  }
+                } else if (parsed.text) {
+                  token = parsed.text;
+                }
+
+                if (token) {
+                  assistantContent += token;
+                  assistantEl.innerHTML = renderMarkdown(assistantContent);
+                  scrollToBottom();
+                }
+              } catch (e) {
+                // If not valid JSON, treat the raw data as a text token
+                if (data && data !== '') {
+                  assistantContent += data;
+                  assistantEl.innerHTML = renderMarkdown(assistantContent);
+                  scrollToBottom();
+                }
+              }
+            }
+          }
+
+          return processChunk();
+        });
+      }
+
+      return processChunk();
+    })
+    .catch(function(err) {
+      // Remove typing indicator
+      var typing = document.getElementById('fifthd-typing');
+      if (typing) typing.remove();
+
+      // Show error
+      var lang = state.language || 'en';
+      var errorMsg = lang === 'zh'
+        ? '抱歉，连接出现问题。请稍后再试。'
+        : 'Sorry, there was a connection issue. Please try again.';
+
+      state.messages.push({ role: 'assistant', content: errorMsg });
+      messagesEl.appendChild(createMessageEl('assistant', errorMsg));
+      scrollToBottom();
+
+      state.isStreaming = false;
+      sendBtn.disabled = false;
+      input.focus();
+      saveState();
+
+      console.error('[5thDim Chat]', err);
+    });
+  }
+
+  /* =============================================
+     Event Listeners
+     ============================================= */
+  bubble.addEventListener('click', openPanel);
+  closeBtn.addEventListener('click', closePanel);
+  sendBtn.addEventListener('click', sendMessage);
+
+  input.addEventListener('input', autoResize);
+
+  input.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  });
+
+  // Close on Escape
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && state.isOpen) {
+      closePanel();
+    }
+  });
+
+  // Close when clicking outside the panel (on desktop)
+  document.addEventListener('mousedown', function(e) {
+    if (state.isOpen && !panel.contains(e.target) && !bubble.contains(e.target)) {
+      closePanel();
+    }
+  });
+
+  /* =============================================
+     Initialization
+     ============================================= */
+  function init() {
+    loadState();
+
+    // Restore language if previously detected
+    if (state.language) {
+      applyLanguage(state.language);
+    }
+
+    // Render persisted messages
+    if (state.messages.length > 0) {
+      renderMessages();
+    }
+  }
+
+  init();
+})();
+</script>
+
+</body>
+</html>
