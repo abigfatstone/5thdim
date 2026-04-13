@@ -36,7 +36,6 @@ function detectLanguage(message, requestedLang) {
   if (requestedLang && requestedLang !== 'auto') {
     return requestedLang;
   }
-  // CJK Unified Ideographs range
   const cjkPattern = /[\u4e00-\u9fff\u3400-\u4dbf]/;
   return cjkPattern.test(message) ? 'zh' : 'en';
 }
@@ -87,7 +86,7 @@ export default {
 
     // Health check
     if (url.pathname === '/health' && request.method === 'GET') {
-      return new Response(JSON.stringify({ status: 'ok' }), {
+      return new Response(JSON.stringify({ status: 'ok', provider: 'openrouter' }), {
         headers: { 'Content-Type': 'application/json', ...corsHeaders },
       });
     }
@@ -111,7 +110,7 @@ async function handleChat(request, env, corsHeaders) {
   }
 
   // Validate API key
-  if (!env.ANTHROPIC_API_KEY) {
+  if (!env.OPENROUTER_API_KEY) {
     return jsonError('Server configuration error: missing API key', 500, corsHeaders);
   }
 
@@ -139,41 +138,45 @@ async function handleChat(request, env, corsHeaders) {
 
   // Build messages array: last MAX_TURNS turns from history + current message
   const maxTurns = parseInt(env.MAX_TURNS, 10) || 6;
-  const maxHistoryMessages = maxTurns * 2; // each turn = 1 user + 1 assistant
+  const maxHistoryMessages = maxTurns * 2;
 
   const trimmedHistory = history
     .filter(m => m && m.role && m.content)
     .slice(-maxHistoryMessages);
 
+  // OpenRouter uses OpenAI-compatible format: system message in messages array
   const messages = [
+    { role: 'system', content: systemPrompt },
     ...trimmedHistory,
     { role: 'user', content: message.trim() },
   ];
 
-  // Call Claude API with streaming
+  const model = env.LLM_MODEL || 'anthropic/claude-sonnet-4';
+
+  // Call OpenRouter API with streaming
   let apiResponse;
   try {
-    apiResponse = await fetch('https://api.anthropic.com/v1/messages', {
+    apiResponse = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-api-key': env.ANTHROPIC_API_KEY,
-        'anthropic-version': '2023-06-01',
+        'Authorization': `Bearer ${env.OPENROUTER_API_KEY}`,
+        'HTTP-Referer': 'https://5thdim.ai',
+        'X-Title': '5thdim.ai - The Fifth Dimension Guide',
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
+        model,
         max_tokens: 1024,
         stream: true,
-        system: systemPrompt,
         messages,
       }),
     });
   } catch (err) {
-    return jsonError('Failed to connect to Claude API', 502, corsHeaders);
+    return jsonError('Failed to connect to OpenRouter API', 502, corsHeaders);
   }
 
   if (!apiResponse.ok) {
-    let errorDetail = `Claude API error: ${apiResponse.status}`;
+    let errorDetail = `OpenRouter API error: ${apiResponse.status}`;
     try {
       const errBody = await apiResponse.text();
       errorDetail += ` - ${errBody}`;
@@ -187,7 +190,6 @@ async function handleChat(request, env, corsHeaders) {
   const writer = writable.getWriter();
   const encoder = new TextEncoder();
 
-  // Process the streaming response in the background
   const streamProcessor = async () => {
     const reader = apiResponse.body.getReader();
     const decoder = new TextDecoder();
@@ -206,23 +208,31 @@ async function handleChat(request, env, corsHeaders) {
           if (!line.startsWith('data: ')) continue;
           const data = line.slice(6).trim();
 
-          if (data === '[DONE]') continue;
+          if (data === '[DONE]') {
+            await writer.write(encoder.encode('data: [DONE]\n\n'));
+            continue;
+          }
           if (!data) continue;
 
           try {
             const event = JSON.parse(data);
 
-            if (event.type === 'content_block_delta' && event.delta?.type === 'text_delta') {
-              const chunk = `data: ${JSON.stringify({ text: event.delta.text })}\n\n`;
+            // OpenRouter uses OpenAI-compatible streaming format
+            const delta = event.choices?.[0]?.delta;
+            if (delta?.content) {
+              const chunk = `data: ${JSON.stringify({ text: delta.content })}\n\n`;
               await writer.write(encoder.encode(chunk));
             }
 
-            if (event.type === 'message_stop') {
+            // Check for finish
+            const finishReason = event.choices?.[0]?.finish_reason;
+            if (finishReason && finishReason !== 'null') {
               await writer.write(encoder.encode('data: [DONE]\n\n'));
             }
 
-            if (event.type === 'error') {
-              console.error('Stream error from Claude:', event.error);
+            // Handle errors in stream
+            if (event.error) {
+              console.error('Stream error from OpenRouter:', event.error);
               const errChunk = `data: ${JSON.stringify({ error: 'Stream interrupted' })}\n\n`;
               await writer.write(encoder.encode(errChunk));
               await writer.write(encoder.encode('data: [DONE]\n\n'));
@@ -257,7 +267,6 @@ async function handleChat(request, env, corsHeaders) {
     }
   };
 
-  // Kick off stream processing without awaiting (runs in background)
   streamProcessor();
 
   return new Response(readable, {

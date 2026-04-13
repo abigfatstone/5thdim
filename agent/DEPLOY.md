@@ -5,10 +5,13 @@
 ```bash
 cd agent/worker
 npm install
-wrangler secret put ANTHROPIC_API_KEY   # paste your Anthropic API key
+wrangler secret put OPENROUTER_API_KEY   # paste your OpenRouter API key
 npm run dev                              # local test at http://localhost:8787
 npm run deploy                           # deploy to Cloudflare
 ```
+
+The default model is `anthropic/claude-sonnet-4` (configurable via `LLM_MODEL` in wrangler.toml).
+Other options: `openai/gpt-4o`, `google/gemini-2.5-pro`, `meta-llama/llama-4-scout`, etc.
 
 After deploy, note your worker URL: `https://5thdim-agent.YOUR_SUBDOMAIN.workers.dev`
 
