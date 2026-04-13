@@ -11,3 +11,8 @@ MAX_TURNS = 6
 LLM_MODEL = "anthropic/claude-sonnet-4"
 
 # Set these as secrets: wrangler secret put OPENROUTER_API_KEY
+
+[[d1_databases]]
+binding = "DB"
+database_name = "5thdim-content"
+database_id = "584271e1-63b0-47ca-85f3-b8f6f7a1f49a"

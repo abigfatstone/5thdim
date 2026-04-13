@@ -96,9 +96,111 @@ export default {
       return handleChat(request, env, corsHeaders);
     }
 
+    // Content API endpoints
+    if (url.pathname.startsWith('/api/content')) {
+      return handleContent(url, request, env, corsHeaders);
+    }
+
     return jsonError('Not found', 404, corsHeaders);
   },
 };
+
+// ============================================================
+// Content API — serves published content from D1
+// ============================================================
+
+async function handleContent(url, request, env, corsHeaders) {
+  if (!env.DB) {
+    return jsonError('Database not configured', 500, corsHeaders);
+  }
+
+  const jsonHeaders = { 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=300', ...corsHeaders };
+  const path = url.pathname.replace('/api/content', '') || '/';
+
+  // POST /api/content — upsert content (requires auth) — check FIRST before GET
+  if ((path === '/' || path === '') && request.method === 'POST') {
+    const authHeader = request.headers.get('Authorization') || '';
+    if (authHeader !== `Bearer ${env.CONTENT_API_KEY}`) {
+      return jsonError('Unauthorized', 401, corsHeaders);
+    }
+
+    let items;
+    try {
+      const body = await request.json();
+      items = Array.isArray(body) ? body : [body];
+    } catch {
+      return jsonError('Invalid JSON', 400, corsHeaders);
+    }
+
+    let upserted = 0;
+    for (const item of items) {
+      if (!item.slug || !item.title || !item.body || !item.collection) continue;
+
+      await env.DB.prepare(`
+        INSERT INTO content (slug, title, title_zh, body, language, collection, series, tags, date, og_description, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+        ON CONFLICT(slug) DO UPDATE SET
+          title = excluded.title, title_zh = excluded.title_zh, body = excluded.body,
+          language = excluded.language, collection = excluded.collection, series = excluded.series,
+          tags = excluded.tags, date = excluded.date, og_description = excluded.og_description,
+          updated_at = datetime('now')
+      `).bind(
+        item.slug, item.title, item.title_zh || null, item.body,
+        item.language || 'en', item.collection, item.series || null,
+        item.tags ? JSON.stringify(item.tags) : null, item.date || null, item.og_description || null,
+      ).run();
+      upserted++;
+    }
+
+    return new Response(JSON.stringify({ upserted }), { headers: jsonHeaders });
+  }
+
+  // GET /api/content — list all collections
+  if ((path === '/' || path === '') && request.method === 'GET') {
+    const result = await env.DB.prepare(
+      'SELECT collection, COUNT(*) as count FROM content GROUP BY collection'
+    ).all();
+    return new Response(JSON.stringify({ collections: result.results }), { headers: jsonHeaders });
+  }
+
+  // GET /api/content/:collection — list items in a collection
+  const collectionMatch = path.match(/^\/([a-z-]+)$/);
+  if (collectionMatch && request.method === 'GET') {
+    const collection = collectionMatch[1];
+    const lang = url.searchParams.get('lang');
+
+    let query = 'SELECT slug, title, title_zh, language, series, tags, date, og_description FROM content WHERE collection = ?';
+    const params = [collection];
+
+    if (lang) {
+      query += ' AND (language = ? OR language = ?)';
+      params.push(lang, 'both');
+    }
+
+    query += ' ORDER BY date DESC';
+    const result = await env.DB.prepare(query).bind(...params).all();
+
+    return new Response(JSON.stringify({ items: result.results.map(r => ({ ...r, tags: r.tags ? JSON.parse(r.tags) : [] })) }), { headers: jsonHeaders });
+  }
+
+  // GET /api/content/:collection/:slug — get single item
+  const itemMatch = path.match(/^\/([a-z-]+)\/([a-z0-9-]+)$/);
+  if (itemMatch && request.method === 'GET') {
+    const [, collection, slug] = itemMatch;
+    const result = await env.DB.prepare(
+      'SELECT * FROM content WHERE collection = ? AND slug = ?'
+    ).bind(collection, slug).first();
+
+    if (!result) {
+      return jsonError('Not found', 404, corsHeaders);
+    }
+
+    result.tags = result.tags ? JSON.parse(result.tags) : [];
+    return new Response(JSON.stringify(result), { headers: jsonHeaders });
+  }
+
+  return jsonError('Not found', 404, corsHeaders);
+}
 
 async function handleChat(request, env, corsHeaders) {
   // Rate limiting
