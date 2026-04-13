@@ -1,0 +1,35 @@
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}
+% 坐标轴
+\draw[->] (0,0) -- (10,0) node[right] {\ifdefined\ENGLISH Ability\else 能力\fi};
+\draw[->] (0,0) -- (0,5) node[above] {\ifdefined\ENGLISH Population\else 人数\fi};
+
+% 原始分布（虚线）
+\draw[dashed, gray, thick] plot[smooth, domain=0:8] (\x, {3*exp(-(\x-4)^2/2.5)});
+\node[gray] at (4, 3.8) {\small \ifdefined\ENGLISH Original distribution\else 原始分布\fi};
+
+% AI后的分布（实线）
+\draw[thick, darkCyan] plot[smooth, domain=4.5:9.5] (\x, {3.5*exp(-(\x-6.4)^2/0.6) + 0.5/(\x-3.8)});
+\node[darkCyan] at (6.4, 4.5) {\small \ifdefined\ENGLISH Post-AI distribution\else AI引入后分布\fi};
+
+% 分数标注
+\draw (0, -0.1) -- (0, 0.1);
+\draw (4, -0.1) -- (4, 0.1);
+\draw (6.4, -0.1) -- (6.4, 0.1);
+\draw (8.5, -0.1) -- (8.5, 0.1);
+\node at (0, -0.5) {\small 0};
+\node at (4, -0.5) {\small 50};
+\node at (6.4, -0.5) {\small 80};
+\node at (8.5, -0.5) {\small 100+};
+
+% 关键标注
+\draw[->, cyan, thick] (1.5, 1) -- (5.8, 2.5);
+\node[cyan] at (1.8, 1.8) {\small \ifdefined\ENGLISH Floor raised\else 地板抬高\fi};
+
+\draw[->, cyan, thick] (7.6, 0.7) -- (9.7, 0.25);
+\node[cyan] at (8.8, 1.2) {\small \ifdefined\ENGLISH Super-individuals\else 超级个体\fi};
+\end{tikzpicture}
+\caption{\ifdefined\ENGLISH AI reshapes the ability distribution: compressed middle, elongated tail\else AI导致的能力分布重塑：中间压缩，尾部拉长\fi}
+\label{fig:ability_curve}
+\end{figure}

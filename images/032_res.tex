@@ -1,0 +1,41 @@
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[scale=0.8, >=stealth,
+  block/.style={rectangle, draw=border, rounded corners=2pt, minimum width=2.2cm, minimum height=0.95cm, align=center, font=\small, fill=paleGray},
+  every node/.style={font=\small}]
+  
+  % --- Left: without residual ---
+  \node[font=\small\bfseries, text=darkGray] at (1.1, 3.8) {\ifdefined\ENGLISH Without Residual\else 无残差连接\fi};
+  
+  \node[block] (x1) at (1.1, 2.8) {$x$};
+  \node[block] (f1) at (1.1, 1.4) {\ifdefined\ENGLISH Transform\else 变换层\fi\\$F(\cdot)$};
+  \node[block] (o1) at (1.1, 0) {\ifdefined\ENGLISH Output\else 输出\fi\\$F(x)$};
+  
+  \draw[->, thick, darkGray] (x1) -- (f1);
+  \draw[->, thick, darkGray] (f1) -- (o1);
+  
+  % Gradient label
+  \draw[->, thick, cyan, dashed] (0.0, 0.3) -- (0.0, 2.5) node[midway, left, font=\scriptsize, text=cyan] {\ifdefined\ENGLISH Gradient backprop\else 梯度回传\fi};
+
+  % --- Right: with residual ---
+  \node[font=\small\bfseries, text=darkGray] at (6.1, 3.8) {\ifdefined\ENGLISH With Residual\else 残差连接\fi};
+  
+  \node[block] (x2) at (6.1, 2.8) {$x$};
+  \node[block] (f2) at (6.1, 1.4) {\ifdefined\ENGLISH Transform\else 变换层\fi\\$F(\cdot)$};
+  \node[block] (o2) at (6.1, 0) {\ifdefined\ENGLISH Output\else 输出\fi\\$x + F(x)$};
+  
+  % Main path
+  \draw[->, thick, darkGray] (x2) -- (f2);
+  \draw[->, thick, darkGray] (f2) -- (o2);
+  
+  % Skip connection (the highway)
+  \draw[<-, thick, primaryBlue] (x2.east) -- ++(1.6, 0) coordinate (skipTop);
+  \draw[thick, primaryBlue] (skipTop) -- ++(0, -2.8) -- (o2.east);
+  \node[font=\scriptsize, text=primaryBlue, right] at (9, 1.4) {\ifdefined\ENGLISH Highway\else 高速公路\fi};
+  
+  % Two gradient paths
+  \draw[->, thick, cyan, dashed] (5.0, 0.3) -- (5.0, 2.5) node[midway, left, font=\scriptsize, text=cyan] {\ifdefined\ENGLISH Gradient backprop\else 梯度回传\fi};
+\end{tikzpicture}
+\caption[\ifdefined\ENGLISH Forward path and gradient backprop with residual connections\else 残差连接的前向路径与梯度回传\fi]{\ifdefined\ENGLISH Forward path and gradient backpropagation with residual connections\else 残差连接的前向路径与梯度回传\fi}
+\label{fig:residual-flow}
+\end{figure}

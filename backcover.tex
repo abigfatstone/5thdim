@@ -1,0 +1,85 @@
+
+% 封底
+\newcommand{\mybackcover}{%
+    \clearpage
+    \thispagestyle{empty}%
+    \begin{tikzpicture}[remember picture,overlay]
+
+        % ── 推荐语 ──
+        \node[anchor=north west,inner sep=0pt] at
+            ([xshift=22mm,yshift=-60mm]current page.north west) {%
+            \parbox[t]{116mm}{%
+                \raggedright
+                \color{black!68}%
+                {\fontsize{10.5}{16.5}\selectfont\kaiti
+                ``我花了十年研究大脑，最近几年在亲自做AI，总在想一个问题：当另一种智能来到这个世界，我们该告诉自己的孩子什么？姜迅用一封写给女儿的长信写下了他的回答。他没有回避焦虑，但也没有投降。这是暴风前夜一封及时的家书。''\par}
+
+                \vspace{4mm}
+
+                {\fontsize{10}{13}\selectfont\color{black!45}
+                \hfill ——陈天桥\par}
+            }%
+
+
+            
+        };
+
+        % ── 点睛句 ──
+        \node[anchor=north west,inner sep=0pt] at
+            ([xshift=22mm,yshift=-126mm]current page.north west) {%
+            \parbox[t]{116mm}{%
+                \raggedright
+                {\fontsize{9.5}{14}\selectfont\color{black!62}\kaiti
+                一千个人有一千个相同的AI，一千个人能写出一千本不同的哈姆雷特。\par}
+                
+                \vspace{4mm}
+
+                {\fontsize{10}{13}\selectfont\color{black!45}
+                \hfill ——AI\par}
+                
+            }%
+        };
+
+        % ── 分隔线 ──
+        \node[anchor=north west,inner sep=0pt] at
+            ([xshift=22mm,yshift=-143mm]current page.north west) {%
+            {\color{black!18}\rule{16mm}{0.3pt}}%
+        };
+
+        % ── 内容简介 ──
+        \node[anchor=north west,inner sep=0pt] at
+            ([xshift=22mm,yshift=-151mm]current page.north west) {%
+            \parbox[t]{116mm}{%
+                \raggedright
+                {\fontsize{9}{14.5}\selectfont\color{black!50}我们正处在一个规则不断被改写的时代。当AI把所有人的能力抬到80分，80分就成了新的零分。这本书想用尽量朴素的大白话，和你一起搞清楚三件事：AI背后究竟是怎么运作的？当AI在很多事上都做得比我们好，还有什么是它做不了的？我们又该怎样借助AI，成为不可替代的人。
+\par}
+
+
+
+% 我始终相信，一本在恰当时机被翻开的书，可以改变一个人看世界的方式。这本书写给孩子们，也写给所有正在经历这场巨变的人。如果它能成为一颗火种，在某个少年心中点燃对未来的好奇与勇气，那便是我作为作者最大的心愿。
+  
+            }%
+        };
+
+        % ── 底部：出版社 ──
+        \node[anchor=south west,inner sep=0pt] at
+            ([xshift=22mm,yshift=22mm]current page.south west) {%
+            {\fontsize{9}{12}\selectfont\color{black!40}
+            \mypublisher\par}
+        };
+
+        % ── ISBN 条码占位区（右下） ──
+        \node[anchor=south east,inner sep=0pt] at
+            ([xshift=-22mm,yshift=18mm]current page.south east) {%
+            \fcolorbox{black!15}{white}{%
+                \parbox[c][18mm][c]{42mm}{%
+                    \centering
+                    {\fontsize{8}{10}\selectfont\color{black!40} ISBN 待补充\par}
+                }%
+            }%
+        };
+
+    \end{tikzpicture}
+    \null
+    \clearpage
+}

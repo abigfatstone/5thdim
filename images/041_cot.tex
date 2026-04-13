@@ -1,0 +1,100 @@
+
+\begin{figure}[ht]
+\centering
+\providecommand{\cotFigureScale}{0.9}
+\begin{tikzpicture}[
+    scale=\cotFigureScale,
+    transform shape,
+    node distance=1cm,
+    >={Stealth[length=3mm]},
+    question/.style={circle, draw=none, fill=darkCyan, text=white, minimum size=0.9cm, font=\bfseries},
+    answer/.style={circle, draw=none, fill=cyan, text=white, minimum size=0.7cm, font=\bfseries\small},
+    example/.style={circle, draw=coolGray, fill=paleGray, text=darkGray, minimum size=0.6cm, font=\bfseries\small},
+    stepnode/.style={circle, draw=none, fill=lightCyan, text=white, minimum size=0.6cm, font=\bfseries\small},
+    uncertain/.style={circle, draw=none, fill=gray, text=white, minimum size=0.5cm, font=\tiny},
+    label/.style={font=\small\bfseries, text=black},
+    sublabel/.style={font=\footnotesize, text=darkGray},
+    annotation/.style={font=\scriptsize, text=darkGray},
+]
+
+% Zero-shot
+\begin{scope}[local bounding box=zeroshot]
+    \node[label] at (0, 3) {Zero-shot};
+    \node[sublabel] at (0, 2.5) {\ifdefined\ENGLISH Ask directly, no examples\else 不给例子，直接问\fi};
+    
+    \node[question] (q1) at (-1.5, 0.5) {Q};
+    
+    % 模糊区域
+    \fill[paleGray] (1, 0.5) ellipse (1.8cm and 1.5cm);
+    
+    % 散落的可能答案
+    \node[uncertain] at (0.2, 1.3) {?};
+    \node[uncertain] at (1.5, 1.4) {?};
+    \node[uncertain] at (2.1, 0.8) {?};
+    \node[uncertain] at (1.8, 0.0) {?};
+    \node[uncertain] at (0.8, -0.3) {?};
+    \node[uncertain] at (0.0, 0.3) {?};
+    \node[uncertain] at (1.2, 0.7) {?};
+    \node[uncertain] at (0.5, 0.9) {?};
+    
+    \draw[->, dashed, thick, cyan] (q1) -- (0, 0.6);
+    
+    \node[annotation] at (1, -1.5) {\ifdefined\ENGLISH Blind pick in fog; answer could be anywhere\else 迷雾中盲选，答案在任意位置\fi};
+\end{scope}
+
+% Few-shot
+\begin{scope}[xshift=6.5cm, local bounding box=fewshot]
+    \node[label] at (0, 3) {Few-shot};
+    \node[sublabel] at (0, 2.5) {\ifdefined\ENGLISH Give a few examples first\else 先给几个例子\fi};
+    
+    \node[question] (q2) at (-2, 0.5) {Q};
+    
+    % 示例点
+    \node[example] (e1) at (-0.5, 1.5) {E$_1$};
+    \node[example] (e2) at (-0.3, -0.5) {E$_2$};
+    \node[example] (e3) at (0.8, 0.8) {E$_3$};
+    
+    \draw[cyan, dashed, thin] (e1) -- (e2) -- (e3) -- cycle;
+    
+    % 聚焦的目标区域
+    \fill[paleCyan] (2, 0.5) circle (0.7cm);
+    \draw[cyan, thick] (2, 0.5) circle (0.7cm);
+    \node[answer] (a2) at (2, 0.5) {A};
+    
+    \draw[->, thick, cyan] (q2) to[out=30, in=150] (a2);
+    
+    \node[annotation] at (0, -1.5) {\ifdefined\ENGLISH Examples as beacons; triangulate\else 例子像灯塔,三点定位\fi};
+\end{scope}
+
+% Chain-of-Thought
+\begin{scope}[xshift=3cm, yshift=-6cm, local bounding box=cot]
+    \node[label] at (1, 3) {Chain-of-Thought};
+    \node[sublabel] at (1, 2.5) {\ifdefined\ENGLISH Guide reasoning step by step\else 一步步引导推理\fi};
+    
+    \node[question] (q3) at (-2, 0.5) {Q};
+    
+    % 步骤节点
+    \node[stepnode] (s1) at (-0.3, 0.5) {1};
+    \node[stepnode] (s2) at (1.2, 0.5) {2};
+    \node[stepnode] (s3) at (2.7, 0.5) {3};
+    
+    \node[answer, minimum size=0.8cm] (a3) at (4.2, 0.5) {A};
+    
+    % 连接路径
+    \draw[->, thick, cyan] (q3) -- (s1);
+    \draw[->, thick, cyan] (s1) -- (s2);
+    \draw[->, thick, cyan] (s2) -- (s3);
+    \draw[->, thick, cyan] (s3) -- (a3);
+    
+    % 步骤标注
+    \node[annotation, above=0.15cm of s1] {\ifdefined\ENGLISH Analyze\else 分析\fi};
+    \node[annotation, above=0.15cm of s2] {\ifdefined\ENGLISH Decompose\else 拆解\fi};
+    \node[annotation, above=0.15cm of s3] {\ifdefined\ENGLISH Derive\else 推导\fi};
+    
+    \node[annotation] at (1, -1.2) {\ifdefined\ENGLISH Stepping stones; one step at a time\else 踏石过河，步步为营\fi};
+\end{scope}
+
+\end{tikzpicture}
+\caption[\ifdefined\ENGLISH Three in-context learning paths\else 三种上下文学习路径\fi]{\ifdefined\ENGLISH Positioning differences among Zero-shot, Few-shot, and Chain-of-Thought\else Zero-shot、Few-shot 与 Chain-of-Thought 的定位差异\fi}
+\label{fig:icl-routing}
+\end{figure}

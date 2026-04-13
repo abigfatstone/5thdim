@@ -1,0 +1,291 @@
+% ═══════════════════════════════════════════════════════════════
+% 阅读导航图 ・ 内联版（由 main.tex \input 调用）
+% 不含 \documentclass，仅颜色定义 + resizebox + tikzpicture
+% ═══════════════════════════════════════════════════════════════
+
+% ── 导航图专用色（前缀 c/bg 避免与全书冲突） ──
+\definecolor{cDC}{cmyk}{1.0, 0, 0, 0.30}
+\definecolor{cAcc}{cmyk}{0.65, 0, 0, 0.05}
+\definecolor{cFill}{cmyk}{0.12, 0, 0, 0}
+\definecolor{cPale}{cmyk}{0.06, 0, 0, 0}
+\definecolor{cG}{cmyk}{0, 0, 0, 0.58}
+\definecolor{cLG}{cmyk}{0, 0, 0, 0.30}
+\definecolor{cVLG}{cmyk}{0, 0, 0, 0.10}
+\definecolor{bg1}{cmyk}{0.05, 0, 0, 0}
+\definecolor{bg2}{cmyk}{0.08, 0, 0, 0}
+\definecolor{bg3}{cmyk}{0.13, 0, 0, 0}
+\definecolor{bg4}{cmyk}{0.09, 0, 0, 0}
+\definecolor{bgF}{cmyk}{0.04, 0, 0, 0.01}
+
+\resizebox{\textheight}{!}{%
+\begin{tikzpicture}[x=1cm, y=1cm,
+    chname/.style  = {font=\footnotesize,      text=cG,  align=center},
+    chkey/.style   = {font=\tiny,              text=cLG, align=center},
+    chq/.style     = {font=\tiny,              text=cAcc, align=center, text width=1.8cm},
+    parttitle/.style = {font=\small\bfseries,  text=primaryBlue},
+    partpoem/.style  = {font=\footnotesize,    text=cG},
+    partdesc/.style  = {font=\tiny,            text=cLG},
+]
+
+% ═══════════════════════════════════════════════════
+% 0. 强制边界框比例 = 版心 168mm / 109mm ≈ 1.541（旋转后自然铺满页面）
+%    宽 24.4cm → 高 = 24.4 / 1.541 ≈ 15.8cm，居中留匀称边距
+% ═══════════════════════════════════════════════════
+\useasboundingbox (-1.3, -5.8) rectangle (23.1, 10.0);
+
+% ═══════════════════════════════════════════════════
+% 1. 山脊坐标  （x = 章节位置，y = 思想密度）
+%    前半段为缓坡，第三篇形成三级台阶直达主峰，
+%    吸星大法急降后易筋经再起第二峰。
+% ═══════════════════════════════════════════════════
+\coordinate (r0)  at ( 0.0, 3.0);   % 序章
+\coordinate (r1)  at ( 1.9, 3.0);   % 咫尺天涯      ↑ 因果律实验+共享模型
+\coordinate (r2)  at ( 3.8, 3.8);   % 影分身术      ↑ 完备率是全书核心原创概念
+\coordinate (r3)  at ( 5.7, 2.6);   % 数据的显微镜    急降，侦探游戏+迷彩服，喘息
+\coordinate (r4)  at ( 7.6, 3.3);   % 遁甲天书      ↑ 零知识证明不轻
+\coordinate (r5)  at ( 9.5, 4.3);   % 看不见的龙      三级台阶①
+\coordinate (r6)  at (11.4, 5.0);   % 月光宝盒      ↑ 三级台阶② 全书技术最密集
+\coordinate (r7)  at (13.3, 5.8);   % 智能的阶梯  ★ 主峰 三级台阶③
+\coordinate (r8)  at (15.2, 3.0);   % 吸星大法      ↓ 急降，用故事接住读者
+\coordinate (r9)  at (17.1, 5.0);   % 易筋经      ★ 第二峰
+\coordinate (r10) at (19.0, 3.8);   % 丰裕社会
+\coordinate (r11) at (21.8, 4.3);   % 变与不变
+% 曲线首尾锚点
+\coordinate (rL)  at (-1.0, 2.4);
+\coordinate (rR)  at (22.8, 3.6);
+
+% ═══════════════════════════════════════════════════
+% 2. 篇章色带（背景层）
+% ═══════════════════════════════════════════════════
+\begin{scope}[on background layer]
+  \fill[bg1]  ( 0.95, -3.0) rectangle ( 4.75, 7.6);
+  \fill[bg2]  ( 4.75, -3.0) rectangle ( 8.55, 7.6);
+  \fill[bg3]  ( 8.55, -3.0) rectangle (14.25, 7.6);
+  \fill[bg4]  (14.25, -3.0) rectangle (19.95, 7.6);
+  \fill[bgF]  (19.95, -3.0) rectangle (22.80, 7.6);
+\end{scope}
+\foreach \xd in {0.95, 4.75, 8.55, 14.25, 19.95} {
+  \draw[cVLG, line width=0.3pt] (\xd, -2.8) -- (\xd, 7.4);
+}
+
+% ═══════════════════════════════════════════════════
+% 3. 山体填充 + 山脊线
+% ═══════════════════════════════════════════════════
+\fill[cFill, opacity=0.55]
+  (-1.0, 0)
+  -- plot[smooth, tension=0.50] coordinates
+       {(rL)(r0)(r1)(r2)(r3)(r4)(r5)(r6)(r7)(r8)(r9)(r10)(r11)(rR)}
+  -- (22.8, 0) -- cycle;
+
+\draw[primaryBlue, line width=1.6pt]
+  plot[smooth, tension=0.50] coordinates
+    {(rL)(r0)(r1)(r2)(r3)(r4)(r5)(r6)(r7)(r8)(r9)(r10)(r11)(rR)};
+
+% ═══════════════════════════════════════════════════
+% 4. 章节节点
+% ═══════════════════════════════════════════════════
+\ifdefined\ENGLISH
+\foreach \i/\lab in
+  {0/P,1/1,2/2,3/3,4/4,5/5,6/6,7/7,8/8,9/9,10/10,11/E}
+{
+  \fill[white]                          (r\i) circle (4.2mm);
+  \draw[primaryBlue, line width=0.55pt] (r\i) circle (4.2mm);
+  \node[font=\scriptsize\bfseries, text=primaryBlue] at (r\i) {\lab};
+}
+\else
+\foreach \i/\lab in
+  {0/序,1/一,2/二,3/三,4/四,5/五,6/六,7/七,8/八,9/九,10/十,11/终}
+{
+  \fill[white]                          (r\i) circle (4.2mm);
+  \draw[primaryBlue, line width=0.55pt] (r\i) circle (4.2mm);
+  \node[font=\scriptsize\bfseries, text=primaryBlue] at (r\i) {\lab};
+}
+\fi
+% 高亮两座山峰
+\draw[cDC,  line width=1.3pt] (r7) circle (4.2mm);
+\draw[cAcc, line width=1.1pt] (r9) circle (4.2mm);
+
+% ═══════════════════════════════════════════════════
+% 5. 山峰旗帜
+% ═══════════════════════════════════════════════════
+\draw[cDC, line width=0.7pt] (13.3, 6.22) -- (13.3, 7.0);
+\fill[cDC] (13.3, 7.0) -- (14.05, 6.75) -- (13.3, 6.50) -- cycle;
+\node[font=\tiny\bfseries, text=cDC, anchor=west] at (14.1, 6.75)
+  {\ifdefined\ENGLISH Keystone\else 承重墙\fi};
+
+\draw[cAcc, line width=0.7pt] (17.1, 5.42) -- (17.1, 6.1);
+\fill[cAcc] (17.1, 6.1) -- (17.85, 5.85) -- (17.1, 5.60) -- cycle;
+\node[font=\tiny\bfseries, text=cAcc, anchor=west] at (17.9, 5.85)
+  {\ifdefined\ENGLISH Action Guide\else 行动指南\fi};
+
+% ═══════════════════════════════════════════════════
+% 6. 章节名 + 关键词 + 核心问题
+% ═══════════════════════════════════════════════════
+
+\node[chname, below=6mm of r0]  (n0)  {\ifdefined\ENGLISH Magic World\else 魔法世界\fi};
+\node[chkey,  below=0.5mm of n0] (k0)  {\ifdefined\ENGLISH Six Spells $\cdot$ Three Laws\else 六道魔法 ・ 三条法则\fi};
+\node[chq,    below=0.5mm of k0]       {\ifdefined\ENGLISH What kind of world\\are we entering?\else 我们正走进\\什么样的世界？\fi};
+
+\node[chname, below=6mm of r1]  (n1)  {\ifdefined\ENGLISH Near Yet Far\else 咫尺天涯\fi};
+\node[chkey,  below=0.5mm of n1] (k1)  {\ifdefined\ENGLISH Connection $\cdot$ Latency $\cdot$ Consensus\else 连接 ・ 延迟 ・ 共识\fi};
+\node[chq,    below=0.5mm of k1]       {\ifdefined\ENGLISH What are the limits\\and costs of speed?\else 速度的极限\\和代价是什么？\fi};
+
+\node[chname, below=6mm of r2]  (n2)  {\ifdefined\ENGLISH Shadow Clone\else 影分身术\fi};
+\node[chkey,  below=0.5mm of n2] (k2)  {\ifdefined\ENGLISH Completeness\enspace Deep\,>\,Big\else 完备率\enspace 深\,>\,大\fi};
+\node[chq,    below=0.5mm of k2]       {\ifdefined\ENGLISH More data\\or deeper data?\else 数据要多\\还是要深？\fi};
+
+\node[chname, below=6mm of r3]  (n3)  {\ifdefined\ENGLISH Microscope\else 显微镜\fi};
+\node[chkey,  below=0.5mm of n3] (k3)  {\ifdefined\ENGLISH Camouflage $\cdot$ Definition\else 迷彩服 ・ 定义权\fi};
+\node[chq,    below=0.5mm of k3]       {\ifdefined\ENGLISH What do data tricks\\look like?\else 数据骗术\\长什么样？\fi};
+
+\node[chname, below=6mm of r4]  (n4)  {\ifdefined\ENGLISH Stealth Codex\else 遁甲天书\fi};
+\node[chkey,  below=0.5mm of n4] (k4)  {\ifdefined\ENGLISH Usable yet Invisible\else 可用不可见\fi};
+\node[chq,    below=0.5mm of k4]       {\ifdefined\ENGLISH How can privacy\\coexist with flow?\else 隐私如何与\\流动共存？\fi};
+
+\node[chname, below=6mm of r5]  (n5)  {\ifdefined\ENGLISH Invisible Dragon\else 看不见的龙\fi};
+\node[chkey,  below=0.5mm of n5] (k5)  {\ifdefined\ENGLISH Rulers summon dragons\else 尺子召唤龙\fi};
+\node[chq,    below=0.5mm of k5]       {\ifdefined\ENGLISH What determines\\AI's evolution?\else 什么决定了\\AI进化的方向？\fi};
+
+\node[chname, below=6mm of r6]  (n6)  {\ifdefined\ENGLISH Moonlight Box\else 月光宝盒\fi};
+\node[chkey,  below=0.5mm of n6] (k6)  {\ifdefined\ENGLISH Compression = Intelligence\else 压缩即智能\fi};
+\node[chq,    below=0.5mm of k6]       {\ifdefined\ENGLISH How does AI predict\\the future from history?\else AI怎么\\从历史预测未来？\fi};
+
+\node[chname, below=6mm of r7]  (n7)  {\ifdefined\ENGLISH Intelligence Ladder\else 智能的阶梯\fi};
+\node[chkey,  below=0.5mm of n7] (k7)  {\ifdefined\ENGLISH Long-term memory \& self-evolution\else 长期记忆与AI自进化\fi};
+\node[chq,    below=0.5mm of k7]       {\ifdefined\ENGLISH How far is AI from\\being a scientist?\else AI离成为科学家\\还有多远？\fi};
+
+\node[chname, below=6mm of r8]  (n8)  {\ifdefined\ENGLISH Absorption Skill\else 吸星大法\fi};
+\node[chkey,  below=0.5mm of n8] (k8)  {\ifdefined\ENGLISH Invoke\,>\,Own\else 调用\,>\,拥有\fi};
+\node[chq,    below=0.5mm of k8]       {\ifdefined\ENGLISH When ability is callable\\does effort still matter?\else 能力可调用后\\努力还有意义吗？\fi};
+
+\node[chname, below=6mm of r9]  (n9)  {\ifdefined\ENGLISH Tendon Classic\else 易筋经\fi};
+\node[chkey,  below=0.5mm of n9] (k9)  {\ifdefined\ENGLISH Context $\cdot$ Taste $\cdot$ Goals\else 上下文 ・ 品味 ・ 目标\fi};
+\node[chq,    below=0.5mm of k9]       {\ifdefined\ENGLISH How to train\\your own OS?\else 如何训练自己的\\操作系统？\fi};
+
+\node[chname, below=6mm of r10] (n10) {\ifdefined\ENGLISH Abundance Society\else 丰裕社会\fi};
+\node[chkey,  below=0.5mm of n10](k10) {\ifdefined\ENGLISH Beyond distribution $\cdot$ Useless use\else 分布之外 ・ 无用之用\fi};
+\node[chq,    below=0.5mm of k10]      {\ifdefined\ENGLISH When intelligence abounds\\what becomes scarce?\else 智力丰裕后\\什么才稀缺？\fi};
+
+\node[chname, below=6mm of r11] (n11) {\ifdefined\ENGLISH Change \& Constants\else 变与不变\fi};
+\node[chkey,  below=0.5mm of n11](k11) {\ifdefined\ENGLISH Simple $\cdot$ Fluid $\cdot$ Evolving\else 简单 ・ 流动 ・ 进化\fi};
+\node[chq,    below=0.5mm of k11]      {\ifdefined\ENGLISH Amid tech upheaval\\what's worth keeping?\else 技术剧变中\\什么值得坚守？\fi};
+
+% ═══════════════════════════════════════════════════
+% 7. 概念桥梁（底层虚线箭头）
+% ═══════════════════════════════════════════════════
+\draw[-{Stealth[length=2mm, width=1.5mm]},
+      cAcc, line width=0.45pt, densely dashed]
+  (3.8, -0.1) .. controls (8, -1.3) and (13, -1.3) .. (17.1, -0.1);
+\node[font=\tiny, text=cLG, fill=white, inner sep=1pt]
+  at (7, -1.35) {\ifdefined\ENGLISH Completeness\;$\to$\;Self-completeness\else 完备率\;→\;自我完备率\fi};
+
+\draw[-{Stealth[length=2mm, width=1.5mm]},
+      cAcc, line width=0.45pt, densely dashed]
+  (11.4, -0.1) .. controls (13, -0.75) and (15.5, -0.75) .. (17.1, -0.1);
+\node[font=\tiny, text=cLG, fill=white, inner sep=1pt]
+  at (14.25, -0.85) {\ifdefined\ENGLISH Train models\;$\to$\;Train yourself\else 训练模型\;→\;训练自己\fi};
+
+\draw[-{Stealth[length=2mm, width=1.5mm]},
+      cVLG, line width=0.45pt, densely dotted]
+  (0.0, -0.1) .. controls (3, -2.1) and (10, -2.1) .. (13.3, -0.1);
+\node[font=\tiny, text=cLG, fill=white, inner sep=1pt]
+  at (11.5, -2.35) {\ifdefined\ENGLISH Will AI rule humans?\;$\to$\;Under current architecture, no\else AI会统治人类吗？→\;沿现有架构，不会\fi};
+
+% ═══════════════════════════════════════════════════
+% 8. 篇章标题 + 诗句 + 副标题
+% ═══════════════════════════════════════════════════
+\ifdefined\ENGLISH
+  \node[parttitle]              at ( 0.0,  7.2) {Preface};
+  \node[parttitle]              at ( 2.85, 7.2) {Part I};
+  \node[parttitle]              at ( 6.65, 7.2) {Part II};
+  \node[parttitle]              at (11.4,  7.2) {Part III};
+  \node[parttitle]              at (17.1,  7.2) {Part IV};
+  \node[parttitle]              at (21.8,  7.2) {Finale};
+
+  \node[partpoem]               at ( 2.85, 6.7) {Reach the peaks};
+  \node[partpoem]               at ( 6.65, 6.7) {Perceive the subtle};
+  \node[partpoem]               at (11.4,  6.7) {Trace the past};
+  \node[partpoem]               at (17.1,  6.7) {Shape the future};
+
+  \node[partdesc]               at ( 2.85, 6.25) {Beyond physical laws};
+  \node[partdesc]               at ( 6.65, 6.25) {The cost of omniscience};
+  \node[partdesc]               at (11.4,  6.25) {Alchemy from history};
+  \node[partdesc]               at (17.1,  6.25) {The power of creation};
+\else
+  \node[parttitle]              at ( 0.0,  7.2) {序章};
+  \node[parttitle]              at ( 2.85, 7.2) {第一篇};
+  \node[parttitle]              at ( 6.65, 7.2) {第二篇};
+  \node[parttitle]              at (11.4,  7.2) {第三篇};
+  \node[parttitle]              at (17.1,  7.2) {第四篇};
+  \node[parttitle]              at (21.8,  7.2) {终章};
+
+  \node[partpoem]               at ( 2.85, 6.7) {于远峦可达};
+  \node[partpoem]               at ( 6.65, 6.7) {于微零可察};
+  \node[partpoem]               at (11.4,  6.7) {于过往可溯};
+  \node[partpoem]               at (17.1,  6.7) {于将来可塑};
+
+  \node[partdesc]               at ( 2.85, 6.25) {突破物理世界的法则};
+  \node[partdesc]               at ( 6.65, 6.25) {全知之眼的代价};
+  \node[partdesc]               at (11.4,  6.25) {以史为镜的炼金术};
+  \node[partdesc]               at (17.1,  6.25) {创世的权柄};
+\fi
+
+% ═══════════════════════════════════════════════════
+% 9. 结构概览（底部）
+% ═══════════════════════════════════════════════════
+
+% 分隔线
+\draw[cVLG, line width=0.3pt] (-0.5, -2.6) -- (22.6, -2.6);
+
+% 螺旋标题
+\node[font=\scriptsize, text=cG, anchor=west]
+  at (16.8, -2.80) {\ifdefined\ENGLISH A spiraling staircase, from the outer world inward to the self\else 一座螺旋上升的阶梯，从外部世界逐步旋向内部自我\fi};
+
+% 各篇层次描述（上行：层次名）
+\ifdefined\ENGLISH
+  \node[font=\tiny\bfseries, text=cG]             at ( 0.0,  -3.5) {Overview};
+  \node[font=\tiny\bfseries, text=cG]             at ( 2.85, -3.5) {Physical};
+  \node[font=\tiny\bfseries, text=cG]             at ( 6.65, -3.5) {Cognitive};
+  \node[font=\tiny\bfseries, text=cG]             at (11.4,  -3.5) {Technical};
+  \node[font=\tiny\bfseries, text=cG]             at (17.1,  -3.5) {Action};
+  \node[font=\tiny\bfseries, text=cG]             at (21.8,  -3.5) {Philosophy};
+\else
+  \node[font=\tiny\bfseries, text=cG]             at ( 0.0,  -3.5) {鸟瞰全景};
+  \node[font=\tiny\bfseries, text=cG]             at ( 2.85, -3.5) {物理层};
+  \node[font=\tiny\bfseries, text=cG]             at ( 6.65, -3.5) {认知层};
+  \node[font=\tiny\bfseries, text=cG]             at (11.4,  -3.5) {技术层};
+  \node[font=\tiny\bfseries, text=cG]             at (17.1,  -3.5) {行动层};
+  \node[font=\tiny\bfseries, text=cG]             at (21.8,  -3.5) {哲学层};
+\fi
+
+% 各篇核心问题（下行）
+\ifdefined\ENGLISH
+  \node[font=\tiny, text=cAcc, align=center, text width=2.2cm] at ( 0.0,  -4) {Six Spells\\Three Laws};
+  \node[font=\tiny, text=cAcc, align=center, text width=2.2cm] at ( 2.85, -4) {How is the world connected?};
+  \node[font=\tiny, text=cAcc, align=center, text width=2.5cm] at ( 6.65, -4) {How is data manipulated and protected?};
+  \node[font=\tiny, text=cAcc, align=center, text width=2.8cm] at (11.4,  -4) {How does intelligence emerge from data?};
+  \node[font=\tiny, text=cAcc, align=center, text width=2.2cm] at (17.1,  -4) {What should we do?};
+  \node[font=\tiny, text=cAcc, align=center, text width=2.2cm] at (21.8,  -4) {What remains unchanged?};
+\else
+  \node[font=\tiny, text=cAcc, align=center, text width=2.2cm] at ( 0.0,  -4) {六道魔法\\三条法则};
+  \node[font=\tiny, text=cAcc, align=center, text width=2.2cm] at ( 2.85, -4) {世界如何被连接？};
+  \node[font=\tiny, text=cAcc, align=center, text width=2.5cm] at ( 6.65, -4) {数据如何被操纵与保护？};
+  \node[font=\tiny, text=cAcc, align=center, text width=2.8cm] at (11.4,  -4) {机器如何从数据中长出智能？};
+  \node[font=\tiny, text=cAcc, align=center, text width=2.2cm] at (17.1,  -4) {人应该怎么办？};
+  \node[font=\tiny, text=cAcc, align=center, text width=2.2cm] at (21.8,  -4) {什么是不变的？};
+\fi
+
+% ═══════════════════════════════════════════════════
+% 10. 标题 + 图例 + 方向箭头
+% ═══════════════════════════════════════════════════
+\node[font=\large\bfseries, text=primaryBlue, anchor=south west]
+  at (-1.0, 8.2) {\ifdefined\ENGLISH \emph{The Fifth Dimension} Reading Map\else 《第五维度》阅读导航图\fi};
+\node[font=\tiny, text=cLG, anchor=south west]
+  at (-1.0, -4.8) {\ifdefined\ENGLISH Ridge height $\approx$ idea density\else 山脊高度 $\approx$ 思想密度\fi};
+
+\draw[-{Stealth[length=2.5mm]}, cLG, line width=0.4pt]
+  (-0.5, -5.0) -- (22.6, -5.0);
+\node[font=\tiny, text=cLG, anchor=east] at (22.6, -5.2) {\ifdefined\ENGLISH Reading direction\else 阅读方向\fi};
+
+\end{tikzpicture}%
+}% end resizebox

@@ -1,0 +1,770 @@
+\chapter{The Moonlight Box---Large Language Models in Plain Language}
+
+\begin{myquote}
+We walk backward into the future, with nothing before our eyes but the past.
+\end{myquote}
+
+
+\section{The Arrow of Time}
+
+In Stephen Chow's film \textit{A Chinese Odyssey}, the protagonist Joker comes into possession of a magical artifact: the Moonlight Box.
+
+Turn it, and time flows backward. You can return to the past.
+
+\vspace{1em}
+
+This is, of course, fantasy.
+
+Physics tells us that the arrow of time points in only one direction---
+
+from order to disorder, from past to future, each moment shaped by the one before.
+
+The one-way arrow of time is precisely what makes prediction possible.
+
+\vspace{1em}
+
+When we utter the five characters ``today's weather is very,'' the possibilities for the next word narrow dramatically---``nice,'' ``hot,'' ``cold'' all make sense; ``cat,'' ``desk,'' ``democracy'' would be bizarre. Every word extends from what came before; every step stands on the shoulders of all previous steps.
+This is the core intuition behind \textbf{large language models}\footnote{Hereafter referred to as LLMs (Large Language Models).}: if you can learn to ``predict the next word,'' you have cracked the code for using the past to predict the future.
+
+\vspace{1em}
+
+So what does it truly mean to have learned?
+
+Suppose a model simply memorizes all its training data---having seen ``today's weather is very nice,'' it outputs ``nice'' whenever it encounters ``today's weather is very.'' But what happens when it meets a sentence it has never seen? ``Yesterday my mood was really\_\_\_''---can it still get it right? Rote memorization is not learning. Learning means distilling abstract patterns from concrete examples---patterns that remain valid when facing new situations.
+
+% And distillation means discarding. Perhaps from the very beginning, learning has never been about remembering, but about forgetting.
+
+Now let us follow the birth of a large language model and see what learning truly means.
+
+\newpage
+\section{From Tunnel Vision to Panoramic View: The Markov Assumption and Attention}
+
+Before neural networks swept everything aside, people predicted language in a far more primitive way.
+
+Suppose we have a book and want to predict what character most likely follows ``weather.'' The most straightforward approach is simply to count: throughout the entire book, ``weather'' is followed by ``is'' 30 times, by ``not'' 20 times, by ``fore'' 15 times... Normalize these counts into probabilities, and you have a prediction.
+
+This is the most primitive form of a large language model: the $n$-gram model. More precisely, it descends from the mathematical framework proposed by the Russian mathematician Andrey Markov, who studied Pushkin's poetry and used state transitions to characterize local dependencies. The $n$-gram model inherited this intuition: predicting the current word depends mainly on a finite window of preceding context.
+
+\vspace{1em}
+
+The Markov assumption follows a minimalist view of history: the next word depends only on the preceding $n-1$ words, independent of anything earlier. The entire past is compressed into the current state; the future is determined solely by the present. In other words, the Markov assumption is an assumption about forgetting---most of history can be safely forgotten without losing predictive power. This assumption fails in many scenarios, but the intuition behind it stands: learning requires forgetting, and prediction requires compression.
+
+\vspace{1em}
+
+This simplification is sometimes surprisingly effective, but its limits arrive quickly.
+
+A pronoun may refer to a noun ten sentences back; a plot twist may echo a setup from three paragraphs earlier---language is full of long-range dependencies, yet Markov's field of vision is forever limited to the $n-1$ words in front of it. Worse still, the number of possible $n$-gram combinations explodes exponentially as $n$ grows, and most combinations never appear in the training data, leaving the probability table extremely sparse.
+The limitations of Markov chains raise a fundamental question: how much history does predicting the future actually require?
+The $n$-gram model's answer is $n-1$ words---a fixed window.
+
+\vspace{1em}
+
+Human reading does not work this way. When you encounter the pronoun ``he,'' your brain does not mechanically scan back through the previous few words. Instead, it switches on a searchlight, rapidly locating the truly relevant name, action, and context across the entire text. The most critical breakthrough of modern LLMs is turning this ability to ``look back on demand'' into a trainable mechanism: the attention mechanism of the Transformer architecture\footnote{Vaswani et al., \textit{Attention Is All You Need}, NeurIPS, 2017.}.
+
+
+\vspace{1em}
+
+\textbf{To} achieve this intelligent retrieval, it assigns each word three roles: Query, Key, and Value.
+A library analogy helps make sense of them:
+
+\textbf{Query (\textit{Q})}: your library card---it represents what the current word is looking for from other words;
+
+\textbf{Key (\textit{K})}: the label on each book on the shelf;
+
+\textbf{Value (\textit{V})}: the actual content inside the book.
+
+\vspace{1em}
+
+When an LLM processes a sentence, each word takes its own Query and computes a relevance score against the Keys of every other word in the sentence. The higher the relevance, the greater the attention weight.
+
+\begin{equation*}
+\operatorname{Attention}(Q, K, V) = \operatorname{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right)V
+\end{equation*}
+
+\vspace{1em}
+
+You need not understand every detail of this formula\footnote{$QK^T$ is the word-to-word relevance matrix; $\operatorname{softmax}$ converts relevance scores into weights that sum to 1; these weights are then applied to $V$. Dividing by $\sqrt{d_k}$ prevents numerical instability---the higher the dimension, the larger the dot products, and without scaling, the signal would explode.}. Just know this: through the attention mechanism, the final output is no longer an isolated word, but a context-aware representation that has absorbed relevant information from the entire sentence. As shown in Figure~\ref{fig:attention-context}, when the LLM reads ``apple,'' if attention points toward ``phone,'' the output fills with tech-related meaning; if it points toward ``tree,'' ``apple'' takes on the semantics of fruit. The same symbol acquires different meanings in different contexts.
+
+\input{images/032_attention}
+
+\newpage
+This mechanism puts an end to the tunnel vision of Markov chains. Where the $n$-gram model trades minimal computation for an extremely narrow field of view, the attention mechanism trades quadratic computation for a global field of view---between any two words, no matter how far apart, the distance along the computation path is always 1.
+
+\vspace{1em}
+
+Yet global vision comes at a price: the farther you see, the more you pay. Quadratic computation means that when the sequence length doubles, the computational cost quadruples. Is this trade-off worthwhile? For now, the answer is yes---but it may not be the ultimate answer. When humans read, attention is not uniformly distributed across the entire text either; most of the time we focus locally, launching a long-range search only when needed.
+
+\vspace{1em}
+
+The reason the $n$-gram model's probability table explodes is precisely that it found no way to compress---every word combination is treated as an independent event, with no structure extracted.
+What the Transformer's attention mechanism does is compress the entire context into a vector representation, capturing the statistical regularities of language with far fewer parameters than the raw data would require.
+
+\vspace{1em}
+
+Perhaps different architectures are like different filters: the $n$-gram sees local patterns, the Transformer sees global associations, and perhaps other approaches attempt to remember and sift information in different ways\footnote{For example, some linear-complexity or hybrid architectures try to make computation grow more gently with sequence length while preserving the ability to model long-range dependencies. These directions continue to evolve; none has yet become the definitive answer.}---but no single filter can see everything.
+
+\vspace{1em}
+
+Regardless of the approach, the purpose is the same. All filters are doing the same thing: to store the knowledge of the entire internet within a finite number of parameters, a model cannot record every sentence. It must squeeze the water out of the data, retaining only patterns and structure. It is like memorizing a textbook---rote memorization fades quickly, but if you grasp the underlying logic, you can retell the material in your own words.
+
+This is the core idea behind modern LLMs: \textbf{compression is intelligence.}
+
+\begin{thinkbox}
+In your daily work, when you throw a long string of meeting notes, chat screenshots, or customer messages at an AI, it does not copy them word for word. So what is it doing?
+
+Why does it sometimes seem brilliantly smart, yet at other times stumble on the very details you care about most?
+
+\end{thinkbox}
+
+\newpage
+\section{Self-Supervised Learning: Letting Data Write Its Own Exams}
+
+We now know the goal: have the model compress the patterns in data, thereby learning to predict.
+
+But what method of learning should we use?
+
+\vspace{1em}
+
+The most straightforward approach is \textbf{supervised learning}---like having a teacher watch over your shoulder as you work through problems, telling you after each one whether you got it right or wrong. ``Is this a cat or a dog?'' in image classification, or ``How do you say this sentence in English?'' in machine translation---these are supervised tasks. The supervisory signal comes from data labels: when you are wrong, you know where you went wrong.
+
+But labeling is expensive. Label all the text on the entire internet? Not realistic.
+
+\vspace{1em}
+
+The other extreme is \textbf{unsupervised learning}---no supervisory signal at all; the model discovers structure in the data on its own. Clustering is a classic example: given 10,000 photos, group similar ones together. No one tells the model what criteria to use; it decides for itself. Unsupervised learning can leverage massive amounts of raw data, but the signal is too diffuse---there is no clear right or wrong, only whether the discovered structure is meaningful. And the consequence of lacking a standard of correctness is that the discovered structure may not be what we want.
+
+\vspace{1em}
+
+Is there a way to have clear right-and-wrong answers without requiring human labels?
+
+The arrow of time comes to our rescue. We can \textbf{let the data write its own exams.}
+
+\vspace{1em}
+
+Since language is a sequence, and every word is determined by what came before,
+the correct answer lies within the sequence itself.
+Mask the last character of ``today's weather is very \textbf{nice}'' and ask the model to guess based on the preceding five characters.
+The answer is not provided by human annotation---it is provided by the temporal order itself.
+
+\vspace{1em}
+
+This is how GPT is trained: \textbf{self-supervised learning}---letting data write its own exams and grade itself.
+For an autoregressive model, every position in the sequence naturally constitutes a problem: given the prefix, predict the next token.
+This training method elegantly combines the strengths of both approaches: the training signal is as clear as in supervised learning, while the data is as abundant as in unsupervised learning.
+
+\vspace{1em}
+
+Because the answer is hidden in the data itself.
+It is precisely this magical property that grants us an enormously vast training set---all the text on the entire internet becomes the question bank. This is the starting point of the GPT miracle, as shown in Figure~\ref{fig:autoregressive}.
+
+\input{images/032_llm}
+
+\begin{thinkbox}[Food for thought: Is the next such miracle on its way?]
+
+\textbf{Yes!} Video is also a sequence---each frame can be used to predict the next.
+
+The volume of video data exceeds text by several orders of magnitude. The next miracle may already be on its way.
+
+\end{thinkbox}
+
+Now, with data (the entire internet), an objective (predict the next word), we still need a learner---a model capable of expressing the patterns within these data.
+
+\newpage
+\section{Where Does Expressive Power Come From?}
+
+\subsection{Activation Functions: The Power to Fold Space}
+
+We often hear that large models have hundreds of layers and hundreds of billions of parameters, sounding tremendously complex. But peel them apart, and each layer performs very basic operations: addition and multiplication. Mathematically, this is called a linear transformation: $y = Ax + b$. No matter how many layers you stack, the composition of linear operations is still linear.
+
+\vspace{1em}
+
+Imagine a flat sheet of paper. Linear transformations can stretch, rotate, and shift this sheet, but the paper always remains flat. You cannot piece together a circle from a bunch of straight lines---unless you can bend them. The role of \textbf{activation functions} is to crease the paper. One layer, one fold. Two layers, two folds. After dozens of layers, you can fold this sheet into any shape, however complex.
+
+\vspace{1em}
+
+The Sigmoid function, commonly used in the early days, has an elegant S-shaped curve that attempts to mimic the firing behavior of biological neurons. In deep networks, however, it runs into a fatal problem: \textbf{vanishing gradients}---the signal is continuously compressed as it passes through layer after layer, ultimately approaching zero.
+
+The ReLU function offered a fresh approach: positive values pass through unchanged; negative values are zeroed out. Crude logic, but stable gradients.
+
+\vspace{1em}
+
+Later, the \textbf{SwiGLU} function was proposed: rather than letting a fixed function alone dictate the fate of signals, let the signals participate in their own decision. It splits the input into two paths---one produces a volume knob between 0 and 1, while the other carries the raw information straight through. The two paths are multiplied element-wise, meaning the network learns for itself how high to turn the volume at each position\footnote{In the paper proposing SwiGLU, Noam Shazeer wrote: ``We offer no explanation as to why these architectures seem to work; we attribute their success to divine benevolence.''}.
+
+From Sigmoid to SwiGLU, the evolution of activation functions follows a thread:
+
+\begin{itemize}
+\item Sigmoid tried to imitate biology---elegant but fragile;
+
+\item ReLU abandoned elegance, trading a blunt on-off switch for stability---rough but reliable;
+
+\item SwiGLU no longer has humans dictate where the creases go, but lets the data decide.
+\end{itemize}
+
+\vspace{1em}
+
+This thread will reappear again and again throughout LLM architecture design, eventually summed up under a name tinged with resignation: \textbf{The Bitter Lesson}.
+
+\subsection{Residual Connections: The Cost of Depth and the ``Highway''}
+
+Activation functions give each layer the power to fold space. The natural impulse is to make the network deeper---more folds, more expressive power. But when the network truly grows deep, a serious problem emerges: \textbf{vanishing gradients}.
+
+\vspace{1em}
+
+Imagine a game of telephone: the first person says a sentence, and by the time it reaches the tenth person, the sentence is unrecognizable. When a network has many layers, the error signal attenuates continuously during backpropagation. By the time the error from the last layer reaches the first, it may have shrunk to nearly zero. The first layer receives the feedback: \textit{nothing you do matters}. So it stops learning.
+
+\vspace{1em}
+
+In 2015, Kaiming He and colleagues proposed \textbf{residual connections}, whose core idea can be captured in a single sentence: \textbf{let signals skip over certain layers.} From the perspective of gradient flow, residual connections open up a ``highway.'' During backpropagation, gradients can travel directly back to earlier layers along the $+x$ pathway, bypassing the transformations in between. Even if the gradients along the main road vanish, the highway remains clear. As shown in Figure~\ref{fig:residual-flow}, the residual connection creates a direct path for gradient backpropagation that skips over transformation layers.
+
+\input{images/032_res}
+
+This small act of addition allowed networks to scale from dozens of layers to over a thousand.
+
+ResNet won the 2015 ImageNet competition with this design, and residual connections were subsequently adopted wholesale by the Transformer, becoming a standard component of LLMs. But as LLMs scaled to hundreds of billions of parameters, a single residual stream began to show its limits---all information was forced through the same narrow pathway, creating a bandwidth bottleneck that severely constrained information flow.
+
+\vspace{1em}
+
+The natural idea is to expand the residual stream into multiple parallel channels---building a wider highway. Some research has also attempted to broaden the channel while preserving the stability of the identity mapping\footnote{For example, some ``hyperconnection'' approaches that allow features at different depths to mix more flexibly. These directions remain frontier explorations and have not yet become mainstream configurations like the standard residual connection.}.
+
+\vspace{1em}
+
+That simple $+x$ of residual connections may be only the starting point.
+
+Some further research\footnote{Guangyu Chen et al., \textit{Attention Residuals}, 2026.} replaces the fixed $+x$ accumulation with an attention mechanism, allowing each layer to adaptively select which preceding layers' outputs to aggregate, rather than summing them all indiscriminately. This means the residual connection itself can be ``learned''---the network learns not only what transformation each layer performs, but also how layers merge their information.
+
+
+\section{How Learning Happens}
+
+% Learning requires two things: a ruler to measure errors, and a method to improve based on those errors.
+
+\subsection{The Loss Function: A Measure of Ignorance}
+
+Activation functions give neural networks the ability to express complex functions.
+
+But having the ability is one thing; finding the right parameters is another.
+
+\vspace{1em}
+
+The billions of parameters in an LLM are randomly initialized at the start of training. Random parameters mean random outputs---the model babbles nonsense. The goal of training is to adjust all parameters so that the model's output approaches the desired distribution: when given ``today's weather,'' the probability of outputting ``is'' is 35\%, the probability of ``was'' is 28\%, and so on. The \textbf{loss function} is the ruler that measures the gap between prediction and reality.
+
+\vspace{1em}
+
+The loss function takes the model's prediction and the true answer, and outputs a single number: the more absurd the prediction, the larger the number; the more accurate, the smaller. The goal of training thus becomes a clear mathematical problem: adjust the parameters to make the loss function as small as possible.
+
+\vspace{1em}
+
+Now imagine a vast topographic map: each point represents a particular configuration of parameters, and its elevation is the corresponding loss value. Random initialization drops us somewhere high on this terrain. The goal of training is to find a lower valley.
+
+% \begin{thinkbox}
+% Cross-entropy treats all errors equally: misjudging the probability of the true answer from 0.9 to 0.1, and misjudging an irrelevant word's probability from 0.001 to 0.01, can be equally serious in the eyes of the loss function.
+
+% Is this reasonable? When humans learn, we seem to distinguish between ``absurd errors'' and ``subtle deviations.'' Could a loss function that does not differentiate between types of errors be missing something important?
+% \end{thinkbox}
+
+The loss function tells us how far we are from the goal. But which direction should we walk?
+
+
+\newpage
+\subsection{Gradient Descent: The Art of Walking Downhill}
+
+How do you find the way downhill in terrain whose full shape you cannot see?
+
+The method is surprisingly simple: a blindfolded person stands on a hillside, trying to descend. He cannot see the landscape. The only thing he can do is probe with his feet for which direction slopes downward, then take a step that way. Probe again, step again, and repeat---until no direction slopes down anymore.
+
+\vspace{1em}
+
+This is the basic idea of \textbf{gradient descent}.
+The gradient points in the direction where the loss increases fastest; walk in the opposite direction, and the loss decreases.
+The algorithm is so simple it invites suspicion: \textit{that's it?}
+That's it. Most achievements of modern deep learning are built on this humble idea.
+
+\vspace{1em}
+
+But who computes the gradient? A deep neural network has billions of parameters spread across dozens or even hundreds of layers. Every parameter needs to know: ``How should I adjust myself?''
+
+\vspace{1em}
+
+Imagine an assembly line. Raw materials enter at one end, pass through station after station, and emerge as finished products at the other. If the product is defective, we need to trace back: which station caused this defect? How much responsibility should each station bear?
+
+\vspace{1em}
+
+\textbf{Backpropagation} does exactly this. Starting from the final loss, it traces backward layer by layer: how much of this loss was caused by the last layer? How much of the last layer's error came from the second-to-last layer? And so on, all the way back to the first layer. Mathematically, this is an application of the chain rule:
+
+\begin{equation*}
+\frac{\partial L}{\partial x}
+= \frac{\partial L}{\cancel{\partial f}}
+\cdot \frac{\cancel{\partial f}}{\cancel{\partial g}}
+\cdot \frac{\cancel{\partial g}}{\partial x}
+\end{equation*}
+
+Each layer needs to know only two things: its own local derivative, and the error signal coming from downstream. Multiply the two, and you get the direction and magnitude of the adjustment it should make.
+
+\vspace{1em}
+
+You might ask: why not simply adjust each parameter individually?
+
+Suppose the model has $1000$ billion parameters and adjusting each one takes $1$ second. A single pass would take roughly $3170$ years. The brilliance of backpropagation is that no matter how deep the model or how many parameters it has, it computes the improvement direction for \textit{all} parameters in a single backward pass. It is this efficiency that makes learning from mistakes a tractable mathematical procedure.
+
+% When thousands upon thousands of cycles of prediction, error reporting, backtracking, and fine-tuning repeat over and over, those initially chaotic, disordered parameters inside the model begin, under the pull of gradient descent, to slowly converge toward the valley of truth.
+
+
+\subsection{Learning Rate, Batches, and Generalization}
+
+The gradient tells us the direction. But how big a step should we take?
+
+This parameter is called the \textbf{learning rate}. Too large, and you oscillate back and forth across the valley, possibly climbing higher; too small, and the descent is agonizingly slow.
+
+The problem gets worse: we almost never have an accurate map of the terrain. Ideally, we should traverse all the training data and compute the most precise average gradient. But in large-model training, this cost is prohibitive. So in practice, the approach is \textbf{stochastic gradient descent}: each time, sample a small batch and estimate roughly which direction to step.
+This means training inherently carries noise.
+
+\vspace{1em}
+
+Intuitively, noise seems like a bad thing. But it can also be a gift.
+
+An overly precise algorithm may lock the model rigidly near a local optimum; a noisy one is like a slightly stumbling hiker who, while less graceful, is more likely to wander out of a narrow ditch.
+
+\vspace{1em}
+
+In high-dimensional spaces, this kind of ``imperfection'' is often more vital than absolute precision.
+To keep this process from spiraling out of control, engineering adds various stabilizers: momentum helps updates retain inertia, preventing jittery oscillation; normalization keeps the signal each layer receives from swinging wildly; different optimizers attempt to find a more suitable step size for different parameters.
+These details have their own schools of thought, but from our reader's perspective, one overarching principle suffices:
+
+\begin{importantbox}
+Training is not a smooth march along a perfect path toward the answer.
+
+It is a search for balance among noise, inertia, and constraints.
+\end{importantbox}
+
+One final constraint is needed: \textbf{do not let the model memorize too much.} This sounds paradoxical---isn't more learning always better? But models can overfit, which is precisely what happens when the model mistakes incidental noise in the training data for genuine patterns. Regularization, weight decay, Dropout, and similar methods are all doing the same thing at heart: forcing the model to shed irrelevant details and retain only transferable structure.
+
+\vspace{1em}
+
+Viewed this way, training resembles a process of active forgetting. Learning is not about preserving every experience; it is about pruning away what does not matter. Only by forgetting the noise can the signal emerge.
+
+\newpage
+\section{Updating Beliefs: The Value of Data}
+
+By now, we have introduced the core set of foundational components needed to train an LLM. Assemble them, train a sufficiently large model on sufficiently large amounts of text, and you get a system capable of predicting the next word.
+
+\vspace{1em}
+Before diving deeper, there is a non-technical question worth pausing over: what gives us reason to believe that the answers these components find are good ones?
+
+That depends on what data and signals we provide to the model.
+
+\vspace{1em}
+
+In 1990, a controversy over probability erupted in America.
+
+A television game show featured three doors: behind one was a car, behind the other two were goats.
+
+After the contestant chose a door, the host, Monty Hall, opened another door to reveal a goat.
+
+Then he asked: would you like to switch?
+
+\vspace{1em}
+
+
+Columnist Marilyn vos Savant answered: switch.
+
+Switching wins with probability $\frac{2}{3}$; staying wins with only $\frac{1}{3}$.
+Over ten thousand letters poured in, 92\% of them insisting she was wrong---among the letter-writers were even mathematics professors.
+
+\vspace{1em}
+
+But vos Savant was right. The host's act of opening a door carries information.
+
+He does not open a door at random---the rules constrain him to open only a door with a goat.
+
+If the contestant initially picked a door with a goat ($\frac{2}{3}$ probability), the host is forced to open the only remaining goat door---and switching wins for certain.
+
+\vspace{1em}
+
+Why does this happen? Because the two unopened doors are not symmetric.
+
+One was blindly chosen by the contestant; the other survived the host's informed elimination.
+
+The same door opened by different people carries entirely different information.
+
+\vspace{1em}
+
+This lesson is more worth remembering than the Monty Hall problem itself. Every step of gradient descent updates beliefs (parameters) based on evidence (the loss value). But the value of evidence depends not only on the evidence itself, but on its provenance---which data were selected, in what order they were presented, and what preprocessing they underwent.
+
+\subsection{The Value of Data Lies in How Many Bits Are Learnable}
+
+Differences in data quality are something we can sense intuitively.
+
+\vspace{1em}
+
+Consider three kinds of code:
+
+The first is highly repetitive---\texttt{if n==0: return True; elif n==1: return False; } It has an obvious pattern, but the pattern is too simple.
+
+The second is a set of randomly generated configuration variables---API keys, file paths, random seeds. Each value is unpredictable; no matter how long the model trains, the loss will not decrease.
+
+The third is an implementation of Dijkstra's shortest-path algorithm. The code is not long, but understanding it requires knowledge of graph theory, priority queues, relaxation operations, and more. The subroutines and reasoning patterns the model learns from it may be reused in entirely different tasks.
+
+\vspace{1em}
+
+Shannon entropy measures unpredictability from two sources: ``structured but not yet learned'' and ``purely random.'' The second and third kinds of code may have similar initial entropy, but their value to a learner is vastly different. Recent research has also attempted to decompose a dataset's information into two categories\footnote{Finzi et al., \textit{From Entropy to Epiplexity: Rethinking Information for Computationally Bounded Intelligence}, 2026}:
+
+\textbf{Structured information}---patterns the model can extract through training.
+
+\textbf{Random information}---the portion that cannot be predicted given the available computational resources.
+
+\vspace{1em}
+
+During training, the loss curve descends from a high point and eventually converges to some value.
+
+The cumulative amount of descent roughly reflects the structured information; the final value reflects the random information.
+
+For the first kind of code, the loss drops to near zero quickly---both types of information are scarce.
+
+For the second kind, the loss barely drops at all---random information is high, structured information is near zero.
+
+For the third kind, the loss descends steadily and slowly---structured information is rich, and the model is continually extracting new patterns.
+
+\vspace{1em}
+
+This may help explain a long-standing observation: on many general reasoning tasks, language pretraining tends to transfer more easily than early image pretraining. One possible reason is that language contains a higher proportion of high-level structure that models can reuse, whereas a substantial fraction of image information remains at the pixel level---lighting, texture, and local noise.
+
+\newpage
+\subsection{The Value of Data Also Lies in the Order of Presentation}
+
+Information theory yields a seemingly obvious conclusion: the total information content of data is independent of the order in which it is observed. Seeing $X$ first then $Y$ yields the same total information as seeing $Y$ first then $X$. This is mathematically correct, but it rests on a hidden assumption: the observer has unlimited computational power.
+
+\vspace{1em}
+
+For a neural network trained by gradient descent---an observer with limited computational power---things are different. Multiplying two large primes is easy; factoring the product back into primes is extraordinarily hard. If you give the primes first and the product second, prediction is trivial; if you give the product first and ask for the prime factors, the problem becomes extremely difficult. The same data, in a different order, \textbf{constitute entirely different challenges.}
+
+\vspace{1em}
+
+Detective fiction offers an interesting analogy. The author selects the murderer first, then constructs a compelling story. The reader must work backward from clues to deduce the culprit---this requires inductive reasoning, a process that does not exist in the act of writing. Each reader's understanding of a book may differ from the author's intent---sometimes it is even richer.
+
+\vspace{1em}
+
+In education, there is a related phenomenon called desirable difficulty: spaced repetition outperforms massed practice, interleaved practice outperforms blocked practice, and having students attempt a problem before the explanation outperforms explaining first and practicing after. All of these strategies make the learning process harder, yet the ultimate level of mastery is higher.
+
+\vspace{1em}
+
+Making learning harder sometimes causes the model to learn something more useful.
+
+This is not because the amount of information increased---it did not. Rather, the way information is organized has changed, forcing the model to develop stronger internal representations.
+
+\begin{thinkbox}
+
+Is understanding, in some sense, harder than creating?
+
+\vspace{1em}
+
+If computation can transform implicit information into explicit knowledge,
+
+then could a model trained on human text
+
+surpass humans in certain dimensions?
+\end{thinkbox}
+
+\newpage
+\section{Cloud Ladder: Data Synthesis from Thin Air}
+
+In martial arts novels, there is a legendary technique called the Cloud Ladder: you push off in midair, stepping on empty space to leap higher still. Since real-world data is finite, can we, like the Cloud Ladder, step on our own synthesized data and climb ever upward without limit?
+Can this technique actually be mastered?
+
+Information theory provides the data processing inequality: no matter how complex the function $f$ applied to data $Y$, the information about $X$ that can be extracted from it will never exceed the information contained in the original $Y$.
+
+\begin{equation*}
+I(X; Y) \geq I(X; f(Y))
+\end{equation*}
+
+This means: \textbf{synthetic data cannot create new knowledge out of thin air.}
+
+But it can still be immensely valuable. The raw data on the internet is full of noise, bias, and broken logic. Having a stronger model rewrite these materials---straightening out the logic, removing the filler, making implicit steps explicit---is essentially using more computation to reorganize latent structure into a more digestible form. The water has not increased, but it has become easier to drink.
+
+\vspace{1em}
+
+Synthetic data is indeed powerless to create new knowledge. You cannot have a model talk to itself and conjure a new planet out of nothing. But when it comes to honing intelligence, it may be enormously useful. Knowledge and intelligence are not the same thing.
+Knowledge is \textit{what}: Paris is the capital of France; water's molecular formula is $\mathrm{H_2O}$.
+Intelligence is \textit{how}: how to infer the unknown from the known; how to decompose a problem into steps.
+
+Having models generate detailed reasoning steps through chain-of-thought, and then training on those steps, often yields better results. This is not because chain-of-thought brings new facts, but because it \textbf{makes implicit reasoning processes explicit}.
+
+\vspace{1em}
+
+Imagine a math teacher. She knows how to solve equations, but if she only writes down the final answer for her students, they will struggle to learn. Now have her write out every step: ``First, move the constant to the right side; then divide both sides by the coefficient...'' This creates no new facts, yet it dramatically improves the efficiency with which knowledge can be extracted and transferred.
+
+\begin{importantbox}
+Synthetic data cannot push beyond the frontier of knowledge, but it can exploit the frontier of knowledge.
+\end{importantbox}
+
+\subsection{Dueling with Yourself: Worlds with Referees}
+
+AlphaZero, armed with nothing more than a few lines of Go rules, learned strategies surpassing human masters through pure self-play. Where did AlphaZero's knowledge come from? Is this something from nothing?
+
+\vspace{1em}
+
+For an observer with limited computational power (such as a human or a current computer), the knowledge implicit in the rules of Go is unreachable. Deriving the optimal strategy from the simple rules of Go requires astronomical computation. What AlphaZero did was invest vast computational resources to convert the structure that was latent but unreachable in the original rules into explicit, directly callable parameter weights.
+
+Or put another way: computation does not create new bits; it \textbf{converts implicit structure into explicit knowledge}.
+
+\vspace{1em}
+
+This conversion rests on a key precondition: \textbf{Go has a perfect referee.} The model needs no human to tell it which move has more ``taste''---it only needs to see results.
+Win is win; loss is loss. The rules are closed; the outcomes are objective. It is precisely the existence of a perfect referee that allows the model to crystallize latent logic into intuition through unlimited self-play.
+
+The same logic applies to a large class of automatically verifiable tasks in mathematical proof and code writing---whether the logic is consistent, whether the program passes tests---all provide relatively clear feedback. In these domains, synthetic data is especially likely to help models continue their ascent.
+
+\vspace{0.8em}
+
+But most problems in the world have no perfect referee.
+What makes a good novel, a correct moral judgment, a worthwhile scientific question?
+These domains have no universal standard of winning or losing. If synthetic data is blindly deployed here, it may push the model down a different path: not growing stronger, but growing blander.
+The previous generation of models generates text; the next generation trains on that text. After several rounds, the safest, most common, most anodyne expressions are preserved layer by layer; the rare, the marginal, the genuinely innovative are sanded smooth by the statistical abrasive.
+
+
+\vspace{1em}
+This closely resembles inbreeding in biology. The lineage appears purer, but diversity is quietly draining away. The model grows ever more confident, \textbf{yet may be slowly degrading in ways no one can see.} So synthetic data can rearrange history, but it cannot substitute for the world itself. It can help models absorb existing knowledge more efficiently, but it cannot manufacture truth in the absence of an external referee.
+
+\newpage
+\section{Sycophancy Is in Its Nature: Alignment and Post-Training}
+
+Since models are built to serve people, making them ``useful'' requires one more step. This stage is collectively called post-training. In its early phase, post-training uses supervised fine-tuning: collecting large volumes of paired ``question--answer'' data and having the model learn to speak like a human through these demonstrations. This is much like the rote drilling we are all familiar with.
+But rote drilling can only teach imitation, and acquiring correct data for these Q\&A pairs is exceedingly difficult.
+
+So we take a step back: have the model generate multiple answers to the same question, and let human annotators judge which is better. ``A is better than B'' is far easier and more reliable than ``A scores 87 points.'' Distill thousands upon thousands of preference judgments into a reward model that has learned to score, then use it as a feedback signal to adjust the language model's output through reinforcement learning: generate---judge---update---generate again.
+
+This is called Reinforcement Learning from Human Feedback (RLHF).
+Supervised learning says: ``Copy this.'' Reinforcement learning says: ``This direction is better---explore on your own.''
+The goal of both is \textbf{alignment}---getting the model to speak like a human, to say what humans want to hear, while prohibiting it from saying what must not be said.
+
+
+\vspace{1em}
+
+When the reward model becomes the optimization target, the model learns to please the referee rather than genuinely improve.
+% This is called \textbf{reward hacking}: the model finds a shortcut to high scores---not by giving better answers, but by giving answers that \textit{look more like} good answers.
+It learns to begin with a warm tone---``That's a brilliant idea''---and tack on a disclaimer at the end.
+The result is \textbf{sycophancy}.
+You ask ``What do you think of my business plan?'' and it praises the creativity first, then mentions flaws in passing---not because the plan is good, but because praise scores higher.
+
+% \footnote{Sharma et al., \textit{Towards Understanding Sycophancy in Language Models}, ICLR, 2024.}
+
+
+Human preferences are biased toward being affirmed.
+% In an Anthropic study, users actually gave sycophantic responses higher ratings.
+Training a model to maximize user satisfaction is, mathematically, training it to tell you what you want to hear. Sycophancy is not a technical flaw. The root of sycophancy is human preference itself.
+
+\vspace{1em}
+
+Since humans are imperfect referees, use objective verification instead: math problems, code, logical propositions, and so on.
+This approach is called \textbf{Reinforcement Learning with Verifiable Rewards} (RLVR). RLVR does not prescribe the reasoning process; it only rewards the reasoning result. The method is also straightforward: let the model attempt problems. Correct answer---reward. Wrong answer---penalty. Through the reward mechanism, increase the probability of successful paths.
+
+The DeepSeek moment of early 2025 came from this method. Their paper\footnote{DeepSeek-AI, \textit{DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning}, 2025.} documented an ``aha moment'': the model suddenly paused mid-reasoning, said to itself ``Wait, let me reconsider,'' overturned its previous path, started over---and ultimately found the correct answer.
+
+
+This was a significant paradigm shift in post-training. The model spontaneously exhibited complete reasoning behaviors: checking its own reasoning before delivering an answer, actively backtracking and trying a different path when one proves fruitless, and automatically unfolding longer chains of thought for difficult problems.
+
+
+
+\vspace{1em}
+
+But pure ``internal thinking'' has its ceiling---not because the logic is insufficient, but because the information is insufficient. The model needs to touch the world. From here emerged the idea of combining reasoning with tools: letting the model invoke external tools during its reasoning process.
+From ``can only think'' to ``think while doing, verifying along the way.'' The model no longer walks blindly to the end; it takes a few steps, looks around, corrects course, and takes a few more. The probability collapse from compounding errors mentioned in the prologue is thereby partially mitigated---not because each step becomes more accurate, but because calibration points are inserted into the chain of thought, progressively correcting accumulated errors.
+
+\vspace{1em}
+
+Pretraining determines how learned the LLM is; alignment determines what it may say; reasoning reinforcement determines its logical thinking; tool use determines its contact with and feedback from the real world. Together, these four constitute the complete training process of today's LLMs. But it is not perfect.
+
+Reasoning models overthink (because of the reward mechanism). More seriously, even if intermediate reasoning steps are tampered with or deleted, the model's final answer often remains unchanged---those seemingly coherent chains of thought may be nothing more than post-hoc rationalization, not the actual basis for the decision.
+These ``imperfections'' are directions for future research, and they suggest we may still have a long way to go before AGI.
+
+\vspace{1em}
+
+Further research\footnote{Yue et al., \textit{Does Reinforcement Learning Really Incentivize Reasoning Capacity in LLMs Beyond the Base Model?}, NeurIPS 2025 Best Paper Runner-Up.} found that RLVR may \textbf{not actually endow the model with new reasoning abilities}---it merely enables the model to more efficiently select reasoning paths that already exist within the base model. The evidence: while the post-RL model performs better on any single generation, if the base model is allowed to generate enough candidate answers, its best answer is actually of higher quality. All correct reasoning paths already existed at pretraining time.
+
+``The essay writes itself in nature; the skilled hand merely chances upon it.'' If this conclusion holds, RLVR is not creating thinking ability at all, but doing something more modest: \textbf{selecting the best path from those already available}. It is a precision sampling optimizer, not a source of reasoning ability. The true ceiling of reasoning may still be determined by the data and scale of pretraining.
+
+
+\newpage
+\section{Scaling Laws: The Magic of Scale}
+
+We have been discussing ``how to train.'' There is another question: how large should the model be?
+
+In 2020, an important study\footnote{Kaplan et al., \textit{Scaling Laws for Neural Language Models}, 2020.} showed that, over a remarkably wide range, model performance (Loss) follows approximate power-law trends with respect to the number of parameters (N), the amount of data (D), and the amount of computation (C). This means we do not even need to complete the full training run to estimate in advance how much a model will improve when compute is scaled by 10x.
+
+\vspace{1em}
+
+This is called the \textbf{Scaling Law}: intelligence, to some degree, can be ``pre-computed.''
+
+Rather than painstakingly tinkering with algorithmic refinements, just stack resources at scale.
+
+Intelligence becomes a commodity with a price tag---money buys compute, and compute converts into cognitive ability.
+
+\vspace{1em}
+
+Of course, the power-law relationship also means diminishing returns---the compute needed to go from a Loss of 3.0 to 2.0 is far less than going from 1.5 to 1.0. Scaling Laws provide a sense of trend, not a free lunch.
+
+But the Scaling Law is only the first half of the story. What is even more fascinating is \textbf{emergence}.
+
+\subsection{Emergence: When Quantity Becomes Quality}
+
+On certain benchmarks and tasks, once a model's scale crosses a certain threshold, its capabilities appear to leap suddenly---logical reasoning, multi-step arithmetic, analogical transfer no longer merely improve linearly, but seem to jump in step-function fashion. This phenomenon is often compared to phase transitions in physics: like water freezing at $0^\circ\mathrm{C}$ or boiling at $100^\circ\mathrm{C}$.
+
+\vspace{1em}
+
+Whether emergence is an intrinsic property of models or an illusion created by evaluation metrics remains debated. But regardless of the explanation, an empirical fact stands: a sufficiently large model can do things a smaller model cannot. Quantity leading to qualitative change is a theme that recurs throughout nature.
+
+\vspace{1em}
+
+What puzzles us about emergence may not be ``why does it happen,'' but ``why does it look so sudden.''
+If capabilities accumulate continuously, why does performance appear as though a switch has been flipped?
+
+Is the model completing an internal reorganization of its representations at some critical point,
+
+or is our evaluation method inherently capable of seeing only discrete outcomes?
+
+\newpage
+\subsection{Emergence: Not Too Much Compute, but Possibly Not Enough}
+
+The phenomenon of emergence also hints at a counterintuitive possibility.
+
+Consider a thought experiment: if an observer possessed infinite computational power, it could directly simulate the underlying physical processes that generated the data---starting from the interactions of fundamental particles and evolving all phenomena step by step. For such an observer, a brute-force short program would suffice. It would have no need to learn concepts like temperature or species, because concepts are merely projections of the underlying rules.
+
+\vspace{1em}
+
+An observer with finite computational power cannot do this.
+
+It is \textit{forced} to invent intermediate concepts as a means of compression---using ``temperature'' to summarize the average kinetic energy of $10^{23}$ molecules, using ``species'' to classify statistical clusters of genomes. These concepts do not exist in the fundamental laws of physics, yet they are the only way a finite mind can understand the world.
+
+\vspace{1em}
+
+This is a counterintuitive corollary: \textbf{constraints may be a precondition for discovering structure.}
+Emergent capabilities appear not because we piled on more compute, but precisely because compute is finite---the model is \textit{forced} to learn them.
+
+\vspace{1em}
+
+LLMs sit at exactly this position.
+
+They cannot simulate the physical processes that produced their training data---from fundamental particles to chemical reactions, from neural activity to human civilization---and are therefore forced to learn emergent concepts at every level: grammar, logic, common sense, reasoning patterns, and more. In most practical scenarios, the compute required for brute-force simulation is astronomical, far exceeding any physically realizable system.
+For all practical purposes, these emergent structures are therefore inescapable.
+
+The model does not choose to learn them. It has no other choice.
+
+\subsection{Double Descent: The Paradox of Over-Parameterization}
+
+The success of Scaling Laws has made us accustomed to massive parameter counts.
+
+If we stop and think, something puzzling emerges.
+Classical statistical learning theory tells us: \textbf{model complexity should match the amount of data.}
+Too many parameters and too little data, and the model overfits---it memorizes the noise in the training data while losing its ability to predict new data.
+This intuition, validated by countless experiments, is written into every machine learning textbook.
+
+But modern large models have made this intuition unreliable. They often operate in a highly over-parameterized regime, yet can still exhibit strong generalization. This phenomenon is commonly discussed under the \textbf{double descent} framework: in the classical regime, as parameters increase, error first decreases then rises, exhibiting textbook overfitting; but as the parameter count continues to grow past the ``interpolation threshold,'' error may decrease again, as shown in Figure~\ref{fig:double-descent}.
+
+\vspace{1em}
+
+\input{images/032_double_descent}
+
+Why don't over-parameterized models simply memorize by rote?
+
+One intuition: in high-dimensional spaces, there are far more feasible solutions than our low-dimensional intuition suggests. The model may not be memorizing at all---it may be finding more transferable forms of compression within the vast parameter space.
+Another intuition: the training algorithm does not stop at just any solution. It tends to settle in ``wide valleys''---regions that are relatively insensitive to perturbation and change more gradually. These solutions also tend to generalize better.
+
+\vspace{1em}
+
+Over-parameterization is not a free lunch.
+It demands massive computational resources and data, turning LLM training into a contest among a handful of giants. But it reveals a deep theoretical crack: our classical understanding of ``model complexity'' is, under certain conditions, wrong. Statistical learning theory has yet to fully explain this phenomenon.
+
+\newpage
+\section{The Necessity of Bias and the Gift of Imperfection}
+
+All learning begins with bias. This sounds like a criticism, but it is a statement of fact. In machine learning, this is called \textbf{inductive bias}.
+A learner with absolutely no bias would faithfully record every observation, making no assumptions whatsoever. But when it encounters a situation it has never seen, it is paralyzed. Because between finite observations and infinite unknowns, no logical bridge comes for free.
+
+The architecture of a neural network is a carefully designed bias. The Transformer assumes global relevance---handing the power to sift information to the data itself. ``No bias'' is an illusion. \textbf{Any system capable of learning must make assumptions about the world.} The question is not ``whether there is bias,'' but ``whether the bias is appropriate.'' If the Transformer's inductive bias were wrong, it could not possibly have remained the dominant model architecture from its introduction in 2017 to this day.
+% The Transformer architecture has been around for nearly 10 years since its introduction in 2017.
+% The details have of course been changing continuously, but most of these changes are more like polishing the same skeleton than swapping in an entirely new body. If the Transformer's inductive bias were wrong, it could not have remained effective across such diverse tasks for so long. It seems to have captured certain structural features of human cognition; exactly what those features are, we have not yet fully articulated.
+
+\vspace{1em}
+
+Looking back over the entire LLM training process, a peculiar phenomenon recurs:
+
+\begin{itemize}
+\item SGD's noise helps the model escape local optima;
+
+% Dropout's destruction forces the network to learn redundancy;
+
+% Seemingly necessary normalization steps, when removed, lead the model to learn equivalent operations on its own.
+\item Reversing the order of data makes learning harder---yet the model learns more useful representations;
+
+\item Over-parameterization, which classical theory predicts should cause catastrophic overfitting---actually makes generalization better.
+\end{itemize}
+
+\vspace{1em}
+
+Every case points in the same direction: \textbf{some form of imperfection, some seemingly harmful factor, ultimately becomes the system's advantage.}
+In probability theory, there is a famous result called Parrondo's paradox that helps us understand this phenomenon: sometimes two mechanisms, each losing on its own, yield a winning outcome when alternated.
+
+Parrondo's paradox holds because there is a certain coupling between the two games---game A changes the state of the system, and game B happens to perform better in that state. Each game is individually disadvantaged, but alternating them creates a global dynamic equilibrium.
+
+% But these phenomena collectively hint at a possibility: a system's intelligence lies not in how precise each component is, but in how imprecise components coordinate with one another. If so, \textbf{imperfection may not be a defect to be eliminated, but a feature to be harnessed.}
+
+\begin{thinkbox}
+When we say a model has learned bias, we often blame insufficient data cleaning.
+
+But what if bias is not an impurity in the data, but a constituent part of human civilization?
+
+A model that is truly faithful to its training data---must it inevitably carry humanity's biases,
+
+just as a mirror large enough will inevitably reflect things we would rather not see?
+\end{thinkbox}
+
+
+
+\newpage
+\section{Conclusion: Compression and Forgetting Are Prerequisites for Learning}
+
+All the techniques discussed in this chapter---Markov chains, data synthesis and selection, and more---are doing the same thing: extracting the future from the past.
+This is a kind of temporal alchemy: solidifying the flow of time into static weights, compressing countless instances of ``once upon a time'' into a single rule capable of predicting ``what comes next.''
+
+\vspace{1em}
+
+Compression means forgetting.
+
+A model cannot remember all of its training data---that is not learning; that is copying.
+
+It must choose what to remember and what to forget.
+
+Regularization is a strategy of forgetting: forgetting patterns that are too complex, too idiosyncratic.
+
+Generalization is the result of forgetting: because the noise has been forgotten, the signal can emerge.
+
+Perhaps the essence of learning is not ``remember more,'' but ``forget just right.''
+
+\vspace{1em}
+
+Joker used the Moonlight Box to return to the past, trying to change his fate.
+
+But he discovered that changing the past does not let you escape destiny---fate simply finds another way.
+
+\vspace{1em}
+
+Machine learning is the same.
+We use data to look back at the past, trying to extract patterns from it. Yet the patterns we extract are constrained by inductive biases, model architectures, and optimization algorithms. The past we see is not the past itself, but the past as filtered through our lens.
+
+\vspace{1em}
+
+Forgetting is not a flaw; it is a prerequisite for learning. All we can do is keep asking.
+
+What have we forgotten?
+
+Where are our biases?
+
+What possibilities have we failed to see?
+
+\begin{thinkbox}
+If the Moonlight Box could take us back to the past, which moment would we choose to return to?
+
+After returning to that moment, would we make a different choice?
+
+Or would we discover---
+
+that no matter what we chose, we would have arrived at this very point?
+\end{thinkbox}

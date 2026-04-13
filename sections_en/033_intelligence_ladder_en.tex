@@ -1,0 +1,700 @@
+% 1，飞机和鸟的差别
+% 3，把llm作为一个模拟器，来训练新的模型
+% 4，现有模型架构对于ood没有办法很好的处理，新的训练方法，现有的模型训练，每个批次的训练数据的分布都是一致的，导致模型天生缺乏对训练数据的自演化的能力
+% 5，attention是个巨大的内积，长程的内积
+% 6，rnn希望去除n平方，但必然会有信息损失
+
+         % 核心观点：
+% 1，观察我们家的猫，上完小便他会假装刨猫砂（从出生后就被抱走了，他从来没有见过其他的猫，没人猫教过他这些），这意味着这些能力是写在基因里的，而不是后天习得
+
+% 2，这说明生物的大脑，出生的时候并不是一个随机权重的网络，相反，是个预置权重的网络。
+
+% 3，进化的机制，rna反转录酶，进化并不只是自然环境的选择，还有拉马克的用进废退。所以，环境并不是唯一的因素，命运是在我们自己手里。当然，个体努力获得更好的环境，也支持了更高的生存率。
+
+% 4，当前的llm学习，假设数据是同分布的，每一个batch的数据都是被打散后，这样保证了loss可以稳定收敛。
+
+% 如果新的知识要学习，那么新的数据必须混合之前的数据分布中，而同时，因为新的数据量特别稀少，所以模型很难显著的表达新的知识。
+
+% 在当前的训练框架下，方法是进行数据合成，目前的训练机制，只能通过构造相同的数据，重复来增加权重。
+
+% 但是机制上似乎是个两难的境地，同分布和OOD，是一面镜子的两面。既要显著表达新数据，又要尽可能符合原来的数据分布下（以避免灾难性遗忘）
+
+% 因为这个数据同分布的训练的原因，导致数据增量学习和变得非常困难，因为预训练结束后的个体在推理环境实时数据，相对于预训练的数据量太少了，就像大海里的一滴水，难以被显著的表征出来。
+
+% 5，人类似乎有个相反的机制。似乎有个专门的区域来表征最新的数据，然后通过遗忘，让不重要的新知识自然消亡，这些用来存储最新的数据的区域，与过去长期记忆，似乎是一个平行的结构（人脑在思考的时候，并不是全脑区激活，每次思考只激活很少的区域）新皮质层似乎在机构上是完全相同的结构，他们是完全平行和对等；
+
+% 思考：为什么回想遥远过去的记忆，似乎更费力？是因为记忆也是分层次的，过去的记忆存储在更深的大脑区域，还是因为他们分散在更多不同的脑区，导致回忆起来需要更多的能量？
+
+% 6，人类的认知是动态演进的——儿童从简单概念的学习到逐渐掌握复杂知识，知识本身也是在不断积累与递进的。这种按时间顺序构建数据的方式，能够帮助模型通过难度或顺序的进展进行学习，使其不仅理解静态事实，还能掌握知识之间的关系及其演变过程。
+
+% 7，因为同分布和OOD的2难困境，导致了实时学习成为了困境，而这个困境，导致AI自进化的困境，很难根据环境来进行调整。
+
+% 7，在智能的推理层面，如果能实现在思想实验：LLM能否从欧几里得几何的五条公理推导出黎曼几何？这要求模型质疑现有的假设（如平行公理），并进入非欧几里得几何的领域。目前的LLM尚不具备这样的创造性能力，因为它们依赖于现有数据进行推理，缺乏提出新假设和扩展知识边界的能力。
+
+% 这个思想实验所需要的环境是完备的吗？还是需要给AI观察世界的能力，但无论如何，如果ai能够从已知推到未知，这是ai自进化需要的另一把钥匙。
+
+% 8，所以，要迈入下一代ai，需要解决的是2个核心的问题是？
+
+% 架构层面：真正的双系统（快速编码 + 慢速整合），类似人脑的海马体-皮层互补，解决同分布和OOD的2难困境
+
+% 学习范式：从"被动压缩数据"到"主动探索世界"——引入好奇心驱动、目标导向的学习，而非纯粹的下一token预测；给于reasoning with tools的能力（这是当前最热门的方向）但是物理世界迭代太慢了，在一个什么环境完备的环境下进行迭代。比如游戏？比如数学（像我们上面提到的思想实验）
+
+\chapter{The Ladder of Intelligence---From Parrot to Scientist}
+
+\begin{myquote}
+What I cannot create, I do not understand.
+
+\hfill --- Richard Feynman
+\end{myquote}
+
+
+In the history of artificial intelligence, airplanes and birds form a frequently invoked analogy.
+
+Airplanes surpass birds on several flight metrics---speed, payload, range.
+
+But their principles of flight are entirely different.
+
+\vspace{1em}
+
+Birds possess lightweight skeletons, wings that adjust in real time, and instinctive adaptation to the environment.
+
+Today's LLMs are more like enormous, parameter-frozen steel machines.
+
+They can cruise in the stratosphere, yet cannot weave through a forest.
+
+This stark contrast is known as \textbf{``jagged intelligence''\footnote{Superhuman along certain dimensions, bafflingly fragile along others.}}.
+
+\vspace{1em}
+
+If an airplane can never fly like a bird,
+
+does that mean we should abandon the study of avian flight?
+
+Or might understanding that very difference be the breakthrough to the next generation of flying machines?
+
+\vspace{1em}
+
+One common view holds that LLMs are merely parrots that mimic speech.
+
+If an LLM is to become a scientist---one who pushes the boundaries of knowledge---what capabilities is it still missing?
+
+Is it a mechanism that writes a single extraordinary experience into long-term memory without repetition?
+
+Or a feedback loop that ventures beyond the training set, seizes fleeting anomalies, and receives the world's response?
+
+\vspace{1em}
+
+There is no standard answer to this question.
+
+The process of thinking about it may be more valuable than any conclusion.
+
+\vspace{1em}
+
+\newpage
+\section{The Self-Taught Cat}
+
+I have a blue-and-white British Shorthair cat at home.
+
+He was brought to our house shortly after birth and has never seen another cat since.
+
+No member of his own kind ever demonstrated how to be a ``proper cat.''
+
+Yet every time he uses the litter box, he dutifully scoops the litter.
+
+The movements are textbook-perfect, the posture complete, as if he had undergone rigorous training.
+
+This seemingly ordinary behavior led me to a question: \textbf{where did he learn this?}
+
+\vspace{1em}
+
+One possibility---the routine is hardwired into his genes.
+
+It is the product of millions of years of evolution, entirely independent of lived experience.
+
+Similar examples abound in nature: birds that have never seen a nest display nest-building tendencies; spiders that have never observed a web can spin intricate geometric patterns; human infants show early preferences for faces and biological motion. Other studies on stimuli such as snakes and spiders point toward a ``preparedness'' for acquiring certain fears more readily, rather than being born with fully formed phobias.
+
+\vspace{1em}
+
+\textbf{What does this imply?}
+
+The biological brain, at the moment of birth, is anything but a blank slate.
+
+Nor does it resemble a randomly initialized neural network.
+
+It is more like a system ``pretrained'' through eons of evolution---
+
+carrying prior knowledge that ancestors purchased with survival, not learning from scratch,
+
+but continuing to learn atop the scaffolding that evolution provides.
+
+\begin{thinkbox}
+If the brain is a network with preset weights, what is ``learning'' actually doing?
+
+Is it modifying those weights, or activating dormant structures?
+
+Or perhaps both?
+\end{thinkbox}
+
+\newpage
+\section{Evolution's Selection: Survival of the Fittest and Use-Disuse}
+
+How is this prior knowledge passed down through the genome?
+
+Classical evolutionary theory holds that the environment filters the direction of variation; traits acquired during a lifetime cannot be inherited. The textbook example: the giraffe's neck grew long not because ancestors strained to reach high leaves, but because individuals with longer necks had better odds of survival. Biological evolution is passive---fate written jointly by random mutation and natural selection.
+The story is simple and powerful, but reality may be more intricate.
+
+\vspace{1em}
+
+Epigenetics has introduced new lines of evidence. External environmental factors can indeed alter epigenetic markers such as DNA methylation and influence the development or metabolism of the next generation. Population studies exemplified by the Dutch Famine have observed transgenerational associations\footnote{Tobi et al., \textit{DNA methylation signatures link prenatal famine exposure to growth and metabolism}, Nature Communications, 2014.}. However, whether such associations persist stably beyond two generations, what their precise mechanisms are, and how broadly they hold remain subjects of active debate in the scientific community.
+
+\vspace{1em}
+
+If these findings are further confirmed, they would demonstrate that the landscape of evolution and heredity is more complex than the single-line narrative found in textbooks.
+Not only environmental filtering, but also a shadow of Lamarck's ``use-disuse''; \textbf{not only being passively selected by fate, but also actively shaping it.}
+
+\vspace{1em}
+
+This invites us to reconsider: is the relationship between the individual and the species closer than we imagined? From a computational neuroscience perspective, how does the genome encode behavior as complex as burying waste? The ``preset weights'' in a kitten's brain represent the results of evolution's search over the fitness landscape. They are triggered by specific environmental stimuli---the smell and texture of excrement---and executed by hardwired circuits in the nervous system. At the moment of birth, synaptic connections have already been initialized near a reasonably good local minimum.
+
+% 这种生物学的"预训练"代表了一种极致的模型压缩。猫的基因组（约27亿个碱基对）在信息量上远小于其大脑的连接组（约2.5亿个神经元和数万亿个突触） 。基因组如何编码如此复杂的掩埋行为？它并不直接编码每一个突触的权重。相反，它编码的是发育的超参数和大脑生长过程中的损失函数。
+
+\vspace{0.8em}
+
+This question is worth pursuing because it connects to our expectations of another ``species''---artificial intelligence. If we want AI to be more than a tool, if we want it to be a system capable of accumulating, evolving, and passing down knowledge, then it may need some mechanism that lets an individual's ``experience'' flow back into the ``species''' future.
+
+\vspace{1em}
+
+\textbf{This is precisely what current AI architectures find hardest to achieve.}
+
+\newpage
+\section{Two Ends of the Scale: I.I.D. and Out-of-Distribution Data}
+
+If we want AI to possess individuality---each person's AI assistant truly understanding its owner, remembering their conversations, adjusting itself to their preferences---then incremental learning from individual data becomes unavoidable. Projecting this perspective onto AI, \textbf{pretraining corresponds to the evolution of the species.}
+
+\vspace{1em}
+
+Trillions of tokens of corpora encompass thousands of years of accumulated human knowledge. Training a model on this data is like a species evolving over vast stretches of time---slow, expensive, yet laying the foundation. After training, the model acquires a kind of ``instinct'': it knows grammar, grasps common sense, masters the basic patterns of reasoning, and more. These abilities were not taught by any single user; they emerged from the ocean of data.
+\vspace{1em}
+
+But species-level evolution is only half the story.
+
+Every cat is unique. It has its own territory, its own preferences, its own patterns of interacting with its owner. These are not written in its genes; they are learned in its brief lifetime. The species provides the foundational capabilities; individual experience shapes a unique personality. We need a mechanism that lets an LLM continue training on individual data after pretraining, becoming a personalized self.
+
+% 在传统的深度学习范式中，训练被视为一种熵减过程。通过随机梯度下降，模型从高熵的随机初始化状态收敛到低熵的局部极小值，从而捕获训练数据中的统计规律。然而，一旦训练结束，这个低熵状态就被"冻结"了。
+
+% 此时，模型本质上变成了一个巨大的查找表，其能够处理的任务边界被严格限制在预训练数据的分布内。
+
+% 当新的信息流进入系统时，如果我们要让模型学会新知识，通常采用微调。但这引发了著名的\textbf{}：为了接纳新数据，我们必须大幅调整权重（高可塑性），但这会破坏原有权重的精细平衡，导致旧知识的灾难性遗忘；反之，若为了保持旧知识而限制权重更新（高稳定性），模型则无法有效适应新环境。
+
+During pretraining, the training data is ``flattened'' along the time dimension. Texts from antiquity and papers from 2024 are mixed together, randomly shuffled into uniformly distributed batches, and fed to the model batch by batch. The data distribution the model sees at step 1 is statistically similar to what it sees at step 1,000,000.
+
+\vspace{1em}
+
+\textbf{This way of organizing training data rests on the independent and identically distributed (I.I.D.) assumption.}
+
+It has mathematical elegance: stable gradients, converging loss, a controllable training process.
+
+The model may simultaneously have memorized Euclid's \textit{Elements} and Riemann's differential geometry, yet it may not truly grasp the intellectual journey from the former to the latter---the confusions, breakthroughs, and paradigm shifts along the historical arc.
+Is I.I.D. training the optimal solution?
+
+\textbf{It is not. It is a compromise.}
+
+\vspace{1em}
+
+Human learning does not work this way. Human cognition has evolved over five thousand years.
+
+From knotted cords to calculus, from alchemy to quantum mechanics, knowledge has its own logic.
+
+A child first learns to count, then addition, then multiplication and algebra.
+
+This sequence is not arbitrary; each step builds on the one before.
+
+Difficult concepts can only be understood after simpler ones have been mastered.
+
+\vspace{1em}
+
+Laboratory research on ``curriculum learning'' shows that if a model learns in order from easy to hard, or if data is organized according to knowledge dependencies, learning efficiency improves significantly. This aligns with intuition---elementary school students are not simultaneously confronted with addition and calculus.
+
+\vspace{1em}
+
+\textbf{The problem is scale.}
+
+When training data reaches trillions of tokens and the corpus spans nearly every domain of human knowledge, it becomes practically impossible to construct a sensible ``curriculum'' for all of it. What counts as simple, what as complex? Which knowledge depends on which prerequisites? These questions may be answerable with manual annotation on small-scale datasets, but they become nearly intractable at the scale of the internet.
+
+And so, randomly shuffling and flattening the data often becomes the most practical engineering choice.
+
+Not because it is optimal, but because we lack a better alternative.
+
+\vspace{1em}
+The price of this compromise---\textbf{at the two ends of the scale, pursuing one end often sacrifices the other}.
+\begin{equation*}
+\text{Expressing new knowledge significantly} \longleftrightarrow \text{Preserving the existing distribution}
+\end{equation*}
+
+When pretraining is complete and new individual data enters the training process, since individual data is \textbf{out-of-distribution} (OOD) relative to the pretraining corpus's population-wide average, the gradient direction of the new data often conflicts with the projection of old gradients. This triggers the well-known \textbf{plasticity--stability dilemma}: either the new knowledge fails to stick---underfitting\footnote{Underfitting: to protect existing knowledge, the learning rate is set very low. New data is like a single drop in the ocean; the gradients it produces are negligible against the inertia of hundreds of billions of parameters, unable to form a significant representation.}; or the old knowledge is entirely overwritten---catastrophic forgetting\footnote{Catastrophic forgetting: to forcibly memorize new data, the learning rate is raised or the model overfits on the new data, causing it to leap out of its previous optimal region and destroying the characteristics of the original distribution.}.
+
+\vspace{1em}
+
+This directly leads to the dilemma of AI self-evolution: the model cannot, like a biological organism, learn a new skill from a single experience without destroying existing ones (one-shot learning).
+
+\newpage
+\section{Borrowing from the Biological Brain}
+The biological brain offers a clue---it has already solved the plasticity--stability dilemma.
+
+We can memorize a new face in seconds without forgetting our mother's.
+
+We can rapidly learn today's news without confusing it with historical knowledge.
+
+\vspace{0.8em}
+
+\textbf{How does the human brain achieve this?}
+
+Rather than trying to solve everything with a single network, the brain evolved two systems with different learning rates and levels of plasticity.
+
+\textbullet~\textbf{Hippocampus:} akin to a high-learning-rate, small-capacity cache. It does not require I.I.D. data. It can rapidly record individual events, with each event stored orthogonally so they do not interfere with one another.
+
+\textbullet~\textbf{Neocortex:} the slow-learning system, analogous to a low-learning-rate, high-capacity pretrained model. It is responsible for extracting semantic memory---what things ``mean.'' It requires interleaved, repeated data to build statistical regularities and form structured knowledge.
+
+\vspace{0.8em}
+
+These two systems are not entirely isolated; they interact through \textbf{memory replay}.
+
+During non-rapid eye movement sleep, the hippocampus generates sharp-wave ripples, \textbf{replaying} newly captured daytime knowledge to the neocortex at a compressed timescale\footnote{Joo and Frank, \textit{The hippocampal sharp wave--ripple in memory retrieval for immediate use and consolidation}, Nature Reviews Neuroscience, 2018.}. This replay effectively constructs a ``mixed batch'' within the brain---interweaving new memories (OOD) with old ones, allowing the neocortex to gradually absorb new knowledge through slow learning while avoiding catastrophic forgetting\footnote{Although the microstructure of neocortical regions is highly similar throughout, precisely where a given memory is stored and how large a network is activated when new memories merge with existing ones still require further empirical investigation.}.
+
+
+\vspace{1em}
+
+There is a thought-provoking phenomenon: why does recalling distant memories seem to require more effort than recalling yesterday?
+
+Several related explanations have been proposed:
+Interference theory suggests that too many similar memories accumulate in between, obscuring one another.
+Retrieval cue theory posits that the original context has changed so much that the right key can no longer be found.
+Or perhaps distant memories are distributed across more brain regions, and reconstructing them demands more complex neural activity.
+
+\vspace{1em}
+
+Whichever explanation holds, they all point to the same possibility:
+Memory is not static storage but dynamic reconstruction. \textbf{Every act of remembering is an act of re-creation.}
+
+\newpage
+\section{The Nature of Memory}
+
+So what, exactly, is memory?
+
+The traditional view understands memory as the preservation of information---like writing data to a hard drive and reading it back when needed.
+But this analogy likely misrepresents the nature of biological memory.
+\textbf{Memory is not mere storage. Memory is a structure that has been validated and can predict.}
+The brain does not ``store'' experiences; it extracts the causal patterns within them.
+
+When we remember that ``fire is hot,'' what we retain is not every detail of a particular burn---the light, the temperature, the precise location of pain---but a causal relationship: touching fire leads to burns. Most of the information from the original experience is discarded; what remains is that validated causal structure.
+
+\vspace{1em}
+
+This suggests that forgetting may not be a failure of memory, but its core function.
+
+Forgetting is pruning after causal validation fails. Information that could not be incorporated into a causal model---noise, coincidence, non-replicable patterns---is gradually cleared away. What remains is \textbf{long-term memory}: patterns that have been repeatedly validated and carry predictive value.
+A growing body of biological research suggests that forgetting is not merely passive decay of memory but may also be an active, energy-consuming biological process that clears outdated information and reduces interference. By contrast, current LLMs attempt to learn as many patterns as possible within the training distribution, which also introduces significant parameter redundancy and inference cost.
+
+\vspace{1em}
+
+In extreme cases, intense emotional arousal causes certain experiences to enter long-term memory at abnormally high strength. If you were once chased by a lion, that experience does not fade slowly like an ordinary daily event. When the consequences of a causal relationship are sufficiently severe---a matter of life and death---the system is biased toward preserving such experiences rather than waiting for prolonged repeated validation.
+
+This is the wisdom of evolution: no need for multiple trials to validate the causal hypothesis that lions are dangerous.
+
+\begin{thinkbox}[思考]
+If memory is causal structure rather than raw data,
+
+what does the concept of ``accurate memory'' even mean?
+
+Is memory ``distortion'' a defect, or is the system working as designed---
+
+continuously reconstructing memory to better serve the prediction needs of the present moment?
+\end{thinkbox}
+
+\newpage
+\section{Correlation and Causation}
+
+Carrying these biological clues, we return to the LLM itself.
+
+The success of LLMs is, at its core, a triumph of correlation. The attention mechanism computes the correlation between every position in a sequence and every other position. When the context window expands to millions of tokens, the span of correlations the model can capture exceeds what any human researcher could manage.
+
+\vspace{0.8em}
+
+Since LLMs can capture so many correlations, do they still need ``causation''?
+This question appears to be about LLMs, but the real question is: is the distinction between correlation and causation a feature of the world itself, or of our way of understanding the world?
+
+
+The dot product in the attention mechanism is mathematically symmetric:
+$\bm{q} \cdot \bm{k} = \bm{k} \cdot \bm{q}$.
+The dot product measures correlation, not directionality. The model knows that a rooster crowing often precedes sunrise, but does it understand a causal relationship between the two, or has it merely captured a pattern of co-occurrence?
+We usually treat this as a flaw of LLMs. But consider a different angle---\textbf{why are we so certain that ``causation'' is closer to the truth of the world than ``correlation''?}
+
+\vspace{0.8em}
+
+An analogy to wave-particle duality may help.
+
+Light is not ``sometimes a wave, sometimes a particle.'' Light is light---an excitation of a quantum field. Wave and particle are two conceptual frameworks we use to describe it, each valid in different experimental contexts. The duality lies not in light itself, but in our ways of understanding it.
+
+\vspace{0.8em}
+
+The relationship between causation and correlation may be similar.
+
+They are two frameworks for describing the same world, optimizing different cognitive tasks:
+
+\textbullet~The correlation framework optimizes prediction---given observations, infer the distribution of other variables.
+
+\textbullet~The causation framework optimizes decision-making---given possible actions, infer their consequences.
+
+\vspace{0.8em}
+
+The opposition between the two is not an opposition within the world itself, but in how we choose to engage with it.
+
+\begin{thinkbox}[思考]
+If causal reasoning is merely a cognitive tool of finite minds rather than an essential feature of intelligence,
+
+then what is the essence of intelligence?
+\end{thinkbox}
+
+\newpage
+\subsection{Understanding the World Under Constraints}
+
+The split between causation and correlation arises from our own situation as knowers.
+If we trace this split to its source, we find that we are always understanding the world under limited conditions.
+
+\vspace{1em}
+
+\textbf{Storage is finite.} ``A causes B'' is an extraordinarily efficient compression---it replaces the enumeration of countless possible worlds with a single arrow. If some supreme being could directly remember the exact trajectory of every object at every moment, it would have no need for the law of universal gravitation.
+
+\textbf{Action is finite.} Causation embeds the perspective of an agent capable of choosing among multiple possible actions and intervening in the world. A pure observer needs no causation; only a decision-maker does.
+
+\textbf{Computational power is finite.} Causation appears to have a direction, but this may not be an intrinsic property of the world. That ``predicting effects from causes'' is easier than ``tracing causes from effects'' may simply be the inevitable experience of an observer with limited computation.
+
+Finite memory, the need for action, insufficient computation---together they shaped our causal intuition.
+
+\vspace{1em}
+
+Pearl's causal hierarchy distinguishes three levels of cognitive agency:
+
+\begin{myquote}
+The first level is the observer. The rooster crowed; the sun rose. Record co-occurrences; discover patterns.
+
+\vspace{1em}
+
+The second level is the interventionist. If I kill the rooster, will the sun still rise?
+This requires breaking the natural causal flow, deliberately altering a variable in the world, and then observing the consequences.
+
+\vspace{1em}
+
+The third level is the counterfactual reasoner. If I had not killed that rooster, what would have happened?
+Imagine a world that never existed, and reason about how things would have unfolded there.
+\end{myquote}
+
+Pearl proved that strict irreducibility exists between these three levels.
+
+Starting from first-level observational data alone, no matter how complete, one cannot derive second-level interventional capabilities. This is commonly used to argue for the limitations of LLMs---that they are locked at the first level. But this argument presupposes a premise: that the causal ladder is the correct yardstick for measuring intelligence.
+
+\vspace{1em}
+
+When we judge a system whose situation is entirely different from ours using human causal intuition, are we measuring its intelligence, \textbf{or measuring its similarity to us?}
+
+
+\newpage
+%——————————————————————————————————————
+\subsection{From Euclid to Riemann}
+%——————————————————————————————————————
+
+We once posed a thought experiment: can an LLM derive Riemannian geometry from the five axioms of Euclidean geometry\footnote{Xun Jiang et al., \textit{Long Term Memory: The Foundation of AI Self-Evolution}, 2024.}? For over two thousand years, countless mathematicians tried to ``prove'' the Fifth Postulate---that through a point outside a line there exists one and only one parallel line. They believed it could be derived from the other four postulates; they simply had not found the method.
+
+\vspace{1em}
+
+Until someone asked a different question: \textbf{what if the Fifth Postulate does not hold?}
+
+Lobachevsky and Bolyai independently explored this hypothesis and found it to be perfectly self-consistent. Non-Euclidean geometry was long regarded as a purely mathematical curiosity---until Einstein discovered that Riemannian geometry happened to describe curved spacetime, and ``parallel lines intersecting'' gained a physical counterpart. This history involves several key steps: questioning an axiom, working out the consequences of an alternative hypothesis, physical anchoring, and analogical transfer.
+
+\vspace{1em}
+
+Can today's LLMs accomplish these? The first step---questioning an axiom---is especially difficult. The training objective of LLMs is to fit the data distribution; what they learn is ``what is common,'' not ``what is possible.'' \textbf{A system optimized for prediction accuracy has no intrinsic motivation to question a frequently occurring assumption.} This is yet another manifestation of the split between correlation and causation: breaking free of correlation requires not more data, but an agent who decides to question.
+
+\vspace{1em}
+
+Of course, we cannot know whether LLMs have already developed some way of organizing the world---a ``framework'' so different from the human conceptual system that we cannot recognize it. The more likely scenario is that current models are indeed performing pattern matching, only at a scale and precision that exceeds our intuition. They are more like Ptolemaic astronomers---trying to fit the data with ever more ``epicycles,'' without necessarily questioning the most common premises.
+
+The problem with the Ptolemaic system was that it could not be simplified. Copernicus's breakthrough was not more accurate prediction, but deeper compression.
+LLMs can keep adding epicycles---more parameters, more data---but they lack the impulse that drives scientific revolutions: \textbf{explaining more with less.}
+
+Where does this impulse come from? Perhaps it is precisely the ``finitude'' we discussed earlier---finite storage, finite life---that compels us to seek compression. A system with very weak resource constraints may not automatically develop the motivation to invent the law of universal gravitation, either.
+
+
+\newpage
+\subsection{Compression, Correlation, and Understanding}
+
+It is precisely because computational power is limited that we are forced to compress the world.
+
+Deep learning training can be viewed as an extreme form of compression: the model starts from a high-entropy random state and, through gradient descent, folds the statistical structures in massive amounts of text into a finite set of parameters. After training, this compression is temporarily frozen; the model gains a remarkable ability to respond, and at the same time acquires definite boundaries.
+
+\vspace{1em}
+
+Imagine an infinitely extending sheet of paper covered with the text humanity has accumulated: history, code, recipes, jokes, and so on. Crumple that paper into a ball. Contents that were originally far apart may end up pressed close together inside the ball.
+
+\vspace{1em}
+
+An LLM can be understood as \textbf{just such a topologically complex paper ball, formed by compressing a vast body of knowledge.}
+What the attention mechanism does is constantly compute this ``who is close to whom'' correlation. For a sequence of length $N$, it constructs an $N \times N$ relationship graph, at a complexity of $\mathcal{O}(N^2)$\footnote{Here, $N$ can be as large as several million. This is precisely why long-context capability is both powerful and expensive.}.
+
+\vspace{1em}
+
+This paradigm is powerful because compression genuinely produces capability. The better a model compresses its data, the better it typically performs on various benchmarks. Many abilities that appear to reflect ``understanding'' may, at their core, stem from more efficient compression.
+
+\vspace{1em}
+
+But compression is not free. It pulls distant things closer, but it also smooths away detail. It makes the model adept at handling ``structures it has seen,'' yet may not help it understand why those structures hold. Simply swapping out names, numbers, or narrative styles in a problem can noticeably degrade many models' performance; adding a few irrelevant sentences is sometimes enough to send accuracy plummeting.
+
+\begin{thinkbox}
+Could compression itself be understanding? Or is compression merely a prerequisite for understanding---
+
+bringing knowledge close together, yet still not reaching the layer of ``why''?
+\end{thinkbox}
+
+\newpage
+\section{How Far Is an LLM from Becoming a Scientist}
+
+If compression can already produce such powerful capabilities, is the LLM already a scientist?
+
+When the model answers ``What is the capital of China,'' it may not, like us, summon maps, history, and geopolitics in its mind. What more likely happens is this: inside that crumpled paper ball, there is an extremely short statistical path between ``the capital of China'' and ``Beijing.''
+
+\vspace{1em}
+
+This does not mean it knows nothing.
+
+On the contrary, it demonstrates that the model has already achieved extraordinarily powerful compression. To be more precise: \textbf{learning to answer is not the same as learning to question; learning to compress is not the same as learning to doubt.}
+
+The new generation of reasoning models brings us closer to this boundary.
+They write longer intermediate steps before giving an answer, verifying, reflecting, and trying alternatives the way humans do. But ``generating longer reasoning traces'' and ``truly possessing a knowledge structure that grows'' are still different things.
+Science is not about reciting known answers more fluently; it is about staying sensitive to anomalies.
+When ordinary people encounter anomalous data, they may dismiss it as an error.
+% 前者是在完成作业，后者是在改写世界。
+The work of a scientist is to pull, again and again, what would otherwise be smoothed away by the averaging mechanism---the \textbf{out-of-distribution}---out of the background noise, to keep questioning, and to rewrite the distribution.
+
+\vspace{1em}
+
+This is where today's LLMs are both closest to and farthest from a scientist.
+
+They are extraordinarily good at summarizing existing knowledge, connecting established concepts, and finding patterns in large-scale corpora that would be nearly impossible for any human researcher to discover. They can even help researchers propose candidate hypotheses, screen experimental directions, and uncover hidden links between papers. As a research assistant, it is already nothing short of stunning.
+But between a research assistant and a scientist lies a hairline crack---and that crack is precisely what matters most.
+
+\vspace{1em}
+
+Today's LLMs are trained to minimize average error.
+For such a system, \textbf{an outlier is noise first, signal second.} It can fluently recite the most common ideas, but it is not yet adept at overturning an entire framework for the sake of a single rare counterexample.
+
+\begin{thinkbox}
+If a system can answer almost every question,
+
+yet never pauses when confronted with a sample that defies common sense,
+
+can it be said to understand the world?
+\end{thinkbox}
+
+\vspace{1em}
+
+\newpage
+\section{The Missing Hippocampus}
+
+The issue here is not merely that the knowledge base is not large enough, but that the memory architecture is not right.
+
+An external retrieval store can help the model look up new information, but it cannot make the model change the way a person changes after a single experience. It may cite a new piece of evidence in the current conversation, yet can hardly develop a more stable, more internalized way of thinking the next time it encounters a similar problem because of that evidence.
+
+\vspace{1em}
+
+Today's LLMs are more like a brain with only a neocortex.
+
+Large in capacity, slow to learn, and once training ends, largely frozen in its parameters. What it lacks is some ``hippocampus''-like fast system---a mechanism that can swiftly record a single experience and then gradually migrate what is worth keeping into long-term memory.
+
+\vspace{1em}
+
+Without such a mechanism, the system is caught in a bind. If nothing changes, it can only remain frozen at the moment of pretraining, passively awaiting the next large-scale retraining. If everything can change, each new experience risks disturbing the entire parameter space, causing catastrophic forgetting.
+
+\vspace{1em}
+
+The reason the human brain can keep learning is not that it has a bigger hard drive, but that it has division of labor. The fast system is responsible for catching what is new, anomalous, and worth heeding; the slow system is responsible for integrating these elements into a relatively stable world model. Sleep, replay, forgetting---all are part of this division of labor. Therefore, what AI truly lacks may not be just ``longer context,'' but ``a mechanism capable of retaining an internal history.''
+
+\begin{importantbox}
+The value of memory
+
+lies not in storing more answers, but in changing the way one thinks from that point forward.
+\end{importantbox}
+
+If a system capable of continuous self-correction ever emerges, it will probably not retrain the entire foundation model at every moment. More likely, it will rely on a multi-timescale architecture: a fast system to capture surprise, an intermediate mechanism to decide what deserves migration, and a slow system to consolidate stable structures.
+
+\vspace{1em}
+
+At that point, the boundary between inference and training will begin to blur.
+
+The system will not merely be invoking the past; in the very act of using the past, it will be quietly changing its future self.
+%——————————————————————————————————————
+\newpage
+\section{Toward a Self-Correcting Architecture}
+%——————————————————————————————————————
+
+The traditional perspective views an LLM as a single monolithic entity requiring wholesale updates. Every learning step demands a full-parameter update. This means that if we want to build a hippocampus-like structure, we must, to some extent, break the current paradigm of strict separation between training and inference, allowing the model to undergo local updates during inference.
+
+But from a different angle, we can design \textbf{memory units that update in real time}, treating the \textbf{LLM as the external environment in which memory units evolve}, and selectively unfreezing those units during inference. Under this framework, the main parameters remain relatively stable; what truly and continuously evolves are the relatively independent memory units. They endure the pressure of the input stream within the environment provided by the LLM, undergoing constant local evolution---discovering structure, forming hierarchies, eliminating redundancy. The system no longer needs to repeatedly pry open the entire parameter space; change need only occur in the local structures that truly matter.
+
+\vspace{1em}
+
+A new question arises: if only a small subset of parameters is updated each time, what about end-to-end gradient backpropagation?
+
+Strictly speaking, gradients are not severed by this approach. Error can still propagate through the entire computational graph; the only difference is that true plasticity no longer resides in the entire model, but only in a small local structure within it. The question thus shifts from \textit{can gradients propagate} to \textit{how to correctly assign credit}---errors are typically generated globally, yet change is permitted only locally. If this credit assignment goes awry, local updates easily degenerate into patches: effective in the short term, but corrosive to system coherence in the long run.
+
+Therefore, a layered self-correction mechanism is needed: a fast system absorbs new experience online; a slow system handles low-frequency integration of stable structures; retrieval-based memory preserves facts; locally plastic parameters distill patterns. New information is not indiscriminately written in. Only when the degree of surprise is sufficiently high\footnote{Ali Behrouz et al., \href{https://arxiv.org/abs/2501.00663}{\textit{Titans: Learning to Memorize at Test Time}}, Google Research, NeurIPS 2025.}, persistence is sufficiently strong, and task relevance is sufficiently high can information pass through the gate into the memory unit.
+
+The key here is not to let the system modify itself at will, but to teach it: what should be cached temporarily, what should be forgotten, and what should be consolidated into long-term memory. When writing, filtering, and integration are governed by the same mechanism, local updates will not tear the whole apart, and memory can truly become part of reasoning.
+If the structures consolidated in long-term memory can, in turn, shape new reasoning, and if effective strategies discovered during reasoning can be continuously written back to long-term storage, then the system forms a genuine self-reinforcing loop:
+\textbf{Memory guides reasoning; reasoning, in turn, enriches memory.}
+
+%——————————————————————————————————————
+\newpage
+\section{I.I.D. and OOD: How to Discover Truly Important New Signals}
+%——————————————————————————————————————
+
+The dilemma between I.I.D. and out-of-distribution (OOD) should also be re-examined within this framework. The current pretraining paradigm is powerful precisely because it relies on the I.I.D. assumption: data is randomly shuffled, gradients stabilize, loss converges, and the model learns a compressed representation of the mainstream world.
+
+But the cost is equally clear: truly important yet rare new signals are easily smoothed away as noise by the averaging process. The more sensible direction is not to have a single mechanism handle both I.I.D. and OOD perfectly, but to assign them to systems operating at different timescales. The slow system continues to absorb the large-scale, stable, recurrently appearing mainstream distribution; the fast system focuses specifically on those anomalous signals that appear rarely, yet may alter subsequent judgments.
+
+\vspace{1em}
+
+The key is not just ``learning new things,'' but first learning to recognize: what truly counts as out-of-distribution. A sample deserves to be treated as OOD data not merely because it is rare, but because it simultaneously meets several conditions: the current model's predictions for it are distorted, this distortion is persistent, it is far from the existing distribution in representation space, and if it turns out to be true, it would significantly change subsequent decisions. Truly important OOD data is often not the data with the fewest occurrences, but the new signal that, though infrequent, is sufficient to shake the premises underlying the old model's judgments.
+
+\vspace{1em}
+
+After OOD data is identified, the fast system caches it first, forms local clusters, and validates in context: ``If this is true, what downstream consequences follow?'' In this way, the system maintains a stable understanding of the mainstream world while not averaging away the seedlings of a truly important new world as noise.
+
+
+When the differentiation of memory within the system is no longer sufficient to sustain evolutionary momentum, more radical update mechanisms come into play. In biological evolution, individuals are born and die. Death is not a flaw of the system but a form of self-renewal: old individuals carry away outdated adaptations; new individuals carry new variations.
+
+\begin{thinkbox}[思考]
+If the foundation model is a base jointly trained on knowledge fragments from all of humanity,
+
+then when the base is upgraded, how does an individual's accumulated long-term memory migrate?
+
+If it cannot migrate, does that mean the old model has, in some sense, already ``died''?
+\end{thinkbox}
+
+
+\newpage
+\section{My Answer to the Dark Future of AI Ruling Humanity}
+
+Let us return to the question raised in the prologue: will a dark future in which artificial intelligence rules the world come to pass?
+
+
+% 让我们把整条训练管线摊开来看信息流动的方向。
+
+% \textbf{预训练阶段}，信息从世界流向模型。互联网的文本被混合成均匀的批次，在独立同分布的假设下压缩进参数。训练结束，参数冻结。
+
+% \textbf{后训练阶段}，信息在模型内部被重新分拣。在预训练结束那一刻可能的路径就已经被画好了。后训练是在已经画好的地图上标出最短路线——不是开疆，是寻路。
+
+% \textbf{推理阶段}，信息从模型流向用户。即便调用了工具、搜索了网页、执行了代码，这些外部信息经过了系统，下一轮对话，重新开始。
+
+% \vspace{0.8em}
+
+% 从头到尾，\textbf{信息只朝一个方向流动}：世界流入模型，模型流向用户。
+
+% 模型回流到自己需要下一次训练。
+
+% \vspace{0.8em}
+
+% 这不是工程上的疏忽，不是尚未实现的功能。
+
+% \textbf{这是IID假设的数学必然。}
+
+\textbf{Pretraining} rests on the I.I.D. assumption; the system is trained to be insensitive to distributional shifts. To the model, deviations from the distribution are noise---something to be averaged away by gradients.
+
+\textbf{Post-training}, if it could break through the I.I.D. boundary, should create new reasoning paths that did not exist in pretraining. But it does not. It is not pioneering new territory; it is finding routes on an existing map.
+
+\textbf{At inference}, information flows from model to user. Tools are called, the web is searched, code is executed---the system cannot change in real time; the next conversation starts from scratch.
+Information flows in one direction: from the world into the model, from the model to the user.
+
+Pretraining, post-training, and inference are three execution phases of the same I.I.D. choice: pretraining selects which structures to compress, post-training selects which paths to surface, and inference selects which tokens to output. Throughout the entire process, the system is doing one thing: making ever more precise selections within a given distribution.
+
+% \vspace{0.8em}
+
+% 而自进化，恰恰需要IID训练压制的全部东西。
+
+% 变异——系统需要产生偏离分布的新表征。但IID把偏离等同于噪声。
+
+% 选择——系统需要判断哪些偏离值得保留，是新真相的第一个信号还是随机扰动。但一个最小化平均误差的系统，唯一的筛选标准就是"与分布一致"。
+
+% 遗传——有益的变异需要被积累、传递。但推理阶段产生的一切信息都是临时的，不回写参数。个体的经历无法回流到"物种"的记忆。
+
+% 三条通路，全部被单向信息流截断。不是某一条不通——是整条链路都不通。
+
+\vspace{0.8em}
+
+Now we can answer the prologue's question more completely: along the trajectory of the current model architecture, \textbf{no, it will not.}
+
+For a system to become dangerous, it needs the capacity to be changed by experience---to rewrite itself in the face of surprise, to turn individual experience into long-term memory, to actively adjust its own goals based on the outcomes of its interactions with the world.
+Before that, it can hardly pursue goals autonomously. A goal implies ``a gap between the current state and the desired state''; it implies that the system can perceive this gap and change itself accordingly. A system with no ``current state'' is simply a tool that follows instructions.
+
+
+\vspace{1em}
+
+Does this mean LLMs are ``safe''?
+\textbf{Not entirely.}
+
+Tools can be misused; they can amplify human biases; they can introduce opaque errors into critical decisions.
+% 一把锤子既可能用来建房子，也可能用来伤人。
+But these are the risks of a tool, not the risks of an autonomous agent.
+The latter is a sharper blade; the former is the hand that picks it up.
+The two call for different response strategies.
+For agent risk, we worry about a system autonomously taking actions harmful to humanity; for tool risk, we worry about humans using tools to cause harm.
+
+\vspace{1em}
+
+Agents need ``alignment''---making AI's goals consistent with human goals.
+
+Tools need ``governance''---regulating who may use which tools, and for what purposes.
+
+For tools, governance matters more than alignment---at least for now.
+
+
+\newpage
+\section{Epilogue: The Airplane Has Arrived; the Bird Has Not}
+
+This chapter has raised far more questions than answers. But perhaps the questions themselves are the harvest.
+
+If we liken today's LLMs to airplanes, then the airplane has already arrived.
+
+It flies fast, it flies high, and it can carry loads far beyond what any bird could manage.
+
+It has proven that without fully replicating the biological brain, one can still achieve astonishing levels of intelligence.
+
+\vspace{1em}
+
+But the bird has not yet arrived.
+
+A bird doubles back through the forest, changes course because of an unusual leaf, carries an experience back to its nest, and slowly turns it into new instinct. A scientist is more like a bird. He or she not only flies, but upon encountering something that defies common sense, rewrites how they fly.
+
+This is where we stand:
+LLMs have proven that compression can produce formidable capability, yet they have not proven that compression alone will give rise to science. The finitude of computational power compels us to invent intermediate concepts as a means of compressing the world. These constraints close off some possibilities while opening others.
+
+\vspace{1em}
+
+LLMs show us the contours of our own cognition.
+
+They map the breadth of our knowledge; their limitations expose how shallow our understanding of ``understanding'' truly is. We use concepts like causation, compression, and emergence to describe intelligence, but these concepts themselves may bear the imprint of observers with finite computation. What kind of wisdom would a system with entirely different constraints develop? We may even lack the language to frame that question.
+
+\vspace{1em}
+
+The engineering problems that vex us now---the quadratic complexity of attention, long-context processing, the dilemma of continual learning---may be solved within a few years.
+Capital's frenzy will subside, bubbles will burst, and surface noise will be filtered out by time.
+
+\vspace{1em}
+
+Those fundamental questions---what transforms an anomaly from noise into a clue? What mechanism turns a single experience into long-term memory? What constraint compels a system to stop merely reciting the world and begin rewriting the way it understands it?
+These questions belong as much to artificial intelligence as they do to our understanding of ourselves.
+
+\vspace{1em}
+
+They existed before us, and they will persist long after.
+
+To participate in this inquiry is, in itself, a kind of fortune.

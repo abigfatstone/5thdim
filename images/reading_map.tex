@@ -1,0 +1,238 @@
+% ═══════════════════════════════════════════════════════════════
+% 《第五维度》阅读导航图
+% 编译方式：xelatex reading_map.tex
+% ═══════════════════════════════════════════════════════════════
+\documentclass{article}
+\usepackage[paperwidth=26.5cm, paperheight=16.5cm, margin=8mm]{geometry}
+\usepackage{xeCJK}
+\setCJKmainfont{PingFang SC}
+\usepackage{tikz}
+\usetikzlibrary{calc, positioning, backgrounds, arrows.meta}
+\pagestyle{empty}
+
+% ── 配色（沿用全书 C+K 双通道体系） ──
+\definecolor{cBlue}{cmyk}{1.0, 0, 0, 0.50}
+\definecolor{cDC}{cmyk}{1.0, 0, 0, 0.30}
+\definecolor{cAcc}{cmyk}{0.65, 0, 0, 0.05}
+\definecolor{cFill}{cmyk}{0.12, 0, 0, 0}
+\definecolor{cPale}{cmyk}{0.06, 0, 0, 0}
+\definecolor{cG}{cmyk}{0, 0, 0, 0.58}
+\definecolor{cLG}{cmyk}{0, 0, 0, 0.30}
+\definecolor{cVLG}{cmyk}{0, 0, 0, 0.10}
+% 篇章底色
+\definecolor{bg1}{cmyk}{0.05, 0, 0, 0}
+\definecolor{bg2}{cmyk}{0.08, 0, 0, 0}
+\definecolor{bg3}{cmyk}{0.13, 0, 0, 0}
+\definecolor{bg4}{cmyk}{0.09, 0, 0, 0}
+\definecolor{bgF}{cmyk}{0.04, 0, 0, 0.01}
+
+\begin{document}
+\begin{tikzpicture}[x=1cm, y=1cm,
+    chname/.style  = {font=\footnotesize,      text=cG,  align=center},
+    chkey/.style   = {font=\tiny,              text=cLG, align=center},
+    chq/.style     = {font=\tiny,              text=cAcc, align=center, text width=1.8cm},
+    parttitle/.style = {font=\small\bfseries,  text=cBlue},
+    partpoem/.style  = {font=\footnotesize,    text=cG},
+    partdesc/.style  = {font=\tiny,            text=cLG},
+]
+
+% ═══════════════════════════════════════════════════
+% 1. 山脊坐标  （x = 章节位置，y = 思想密度）
+% ═══════════════════════════════════════════════════
+\coordinate (r0)  at ( 0.0, 3.0);   % 序章
+\coordinate (r1)  at ( 1.9, 2.5);   % 咫尺天涯
+\coordinate (r2)  at ( 3.8, 3.3);   % 影分身术
+\coordinate (r3)  at ( 5.7, 3.0);   % 数据的显微镜
+\coordinate (r4)  at ( 7.6, 2.6);   % 遁甲天书
+\coordinate (r5)  at ( 9.5, 4.3);   % 看不见的龙
+\coordinate (r6)  at (11.4, 3.8);   % 月光宝盒
+\coordinate (r7)  at (13.3, 5.8);   % 智能的阶梯  ★ 主峰
+\coordinate (r8)  at (15.2, 3.3);   % 吸星大法
+\coordinate (r9)  at (17.1, 5.0);   % 易筋经      ★ 第二峰
+\coordinate (r10) at (19.0, 3.8);   % 丰裕社会
+\coordinate (r11) at (20.9, 4.3);   % 变与不变
+% 曲线首尾锚点
+\coordinate (rL)  at (-1.0, 2.2);
+\coordinate (rR)  at (21.7, 3.6);
+
+% ═══════════════════════════════════════════════════
+% 2. 篇章色带（背景层）
+% ═══════════════════════════════════════════════════
+\begin{scope}[on background layer]
+  \fill[bg1]  ( 0.95, -3.0) rectangle ( 4.75, 7.6);   % 第一篇
+  \fill[bg2]  ( 4.75, -3.0) rectangle ( 8.55, 7.6);   % 第二篇
+  \fill[bg3]  ( 8.55, -3.0) rectangle (14.25, 7.6);   % 第三篇
+  \fill[bg4]  (14.25, -3.0) rectangle (19.95, 7.6);   % 第四篇
+  \fill[bgF]  (19.95, -3.0) rectangle (21.70, 7.6);   % 终章
+\end{scope}
+\foreach \xd in {0.95, 4.75, 8.55, 14.25, 19.95} {
+  \draw[cVLG, line width=0.3pt] (\xd, -2.8) -- (\xd, 7.4);
+}
+
+% ═══════════════════════════════════════════════════
+% 3. 山体填充 + 山脊线
+% ═══════════════════════════════════════════════════
+\fill[cFill, opacity=0.55]
+  (-1.0, 0)
+  -- plot[smooth, tension=0.50] coordinates
+       {(rL)(r0)(r1)(r2)(r3)(r4)(r5)(r6)(r7)(r8)(r9)(r10)(r11)(rR)}
+  -- (21.7, 0) -- cycle;
+
+\draw[cBlue, line width=1.6pt]
+  plot[smooth, tension=0.50] coordinates
+    {(rL)(r0)(r1)(r2)(r3)(r4)(r5)(r6)(r7)(r8)(r9)(r10)(r11)(rR)};
+
+% ═══════════════════════════════════════════════════
+% 4. 章节节点
+% ═══════════════════════════════════════════════════
+\foreach \i/\lab in
+  {0/序,1/一,2/二,3/三,4/四,5/五,6/六,7/七,8/八,9/九,10/十,11/终}
+{
+  \fill[white]              (r\i) circle (4.2mm);
+  \draw[cBlue, line width=0.55pt] (r\i) circle (4.2mm);
+  \node[font=\scriptsize\bfseries, text=cBlue] at (r\i) {\lab};
+}
+% 高亮两座山峰
+\draw[cDC,  line width=1.3pt] (r7) circle (4.2mm);
+\draw[cAcc, line width=1.1pt] (r9) circle (4.2mm);
+
+% ═══════════════════════════════════════════════════
+% 5. 山峰旗帜
+% ═══════════════════════════════════════════════════
+% ── 主峰：智能的阶梯 ──
+\draw[cDC, line width=0.7pt] (13.3, 6.22) -- (13.3, 7.0);
+\fill[cDC] (13.3, 7.0) -- (14.05, 6.75) -- (13.3, 6.50) -- cycle;
+\node[font=\tiny\bfseries, text=cDC, anchor=west] at (14.1, 6.75)
+  {智识之巅};
+
+% ── 第二峰：易筋经 ──
+\draw[cAcc, line width=0.7pt] (17.1, 5.42) -- (17.1, 6.1);
+\fill[cAcc] (17.1, 6.1) -- (17.85, 5.85) -- (17.1, 5.60) -- cycle;
+\node[font=\tiny\bfseries, text=cAcc, anchor=west] at (17.9, 5.85)
+  {行动之巅};
+
+% ═══════════════════════════════════════════════════
+% 6. 章节名 + 关键词（挂在山脊下方）
+% ═══════════════════════════════════════════════════
+
+% ── 序章 ──
+\node[chname, below=6mm of r0]  (n0)  {魔法世界};
+\node[chkey,  below=0.5mm of n0] (k0)  {六道魔法 ・ 三条法则};
+\node[chq,    below=0.5mm of k0]       {我们正走进\\什么样的世界？};
+
+% ── 第一篇 ──
+\node[chname, below=6mm of r1]  (n1)  {咫尺天涯};
+\node[chkey,  below=0.5mm of n1] (k1)  {连接 ・ 延迟 ・ 共识};
+\node[chq,    below=0.5mm of k1]       {速度的极限\\和代价是什么？};
+
+\node[chname, below=6mm of r2]  (n2)  {影分身术};
+\node[chkey,  below=0.5mm of n2] (k2)  {完备率\enspace 深\,>\,大};
+\node[chq,    below=0.5mm of k2]       {数据要多\\还是要深？};
+
+% ── 第二篇 ──
+\node[chname, below=6mm of r3]  (n3)  {显微镜};
+\node[chkey,  below=0.5mm of n3] (k3)  {迷彩服 ・ 定义权};
+\node[chq,    below=0.5mm of k3]       {数据骗术\\长什么样？};
+
+\node[chname, below=6mm of r4]  (n4)  {遁甲天书};
+\node[chkey,  below=0.5mm of n4] (k4)  {可用不可见};
+\node[chq,    below=0.5mm of k4]       {隐私如何与\\流动共存？};
+
+% ── 第三篇 ──
+\node[chname, below=6mm of r5]  (n5)  {看不见的龙};
+\node[chkey,  below=0.5mm of n5] (k5)  {尺子召唤龙};
+\node[chq,    below=0.5mm of k5]       {什么决定了\\AI进化的方向？};
+
+\node[chname, below=6mm of r6]  (n6)  {月光宝盒};
+\node[chkey,  below=0.5mm of n6] (k6)  {压缩即智能};
+\node[chq,    below=0.5mm of k6]       {AI怎么学会\\"思考"？};
+
+\node[chname, below=6mm of r7]  (n7)  {智能的阶梯};
+\node[chkey,  below=0.5mm of n7] (k7)  {飞机与鸟 ・ 记忆 ・ 因果};
+\node[chq,    below=0.5mm of k7]       {AI离真正智能\\还差什么？};
+
+% ── 第四篇 ──
+\node[chname, below=6mm of r8]  (n8)  {吸星大法};
+\node[chkey,  below=0.5mm of n8] (k8)  {调用\,>\,拥有};
+\node[chq,    below=0.5mm of k8]       {能力可调用后\\努力还有意义吗？};
+
+\node[chname, below=6mm of r9]  (n9)  {易筋经};
+\node[chkey,  below=0.5mm of n9] (k9)  {上下文 ・ 品味 ・ 目标};
+\node[chq,    below=0.5mm of k9]       {如何训练自己的\\操作系统？};
+
+\node[chname, below=6mm of r10] (n10) {丰裕社会};
+\node[chkey,  below=0.5mm of n10](k10) {分布之外 ・ 无用之用};
+\node[chq,    below=0.5mm of k10]      {智力丰裕后\\什么才稀缺？};
+
+% ── 终章 ──
+\node[chname, below=6mm of r11] (n11) {变与不变};
+\node[chkey,  below=0.5mm of n11](k11) {简单 ・ 流动 ・ 进化};
+\node[chq,    below=0.5mm of k11]      {技术剧变中\\什么值得坚守？};
+
+% ═══════════════════════════════════════════════════
+% 7. 概念桥梁（底层虚线箭头）
+% ═══════════════════════════════════════════════════
+% 完备率 → 自我完备率
+\draw[-{Stealth[length=2mm, width=1.5mm]},
+      cAcc, line width=0.45pt, densely dashed]
+  (3.8, -0.1) .. controls (8, -1.3) and (13, -1.3) .. (17.1, -0.1);
+\node[font=\tiny, text=cLG, fill=white, inner sep=1pt]
+  at (10.5, -1.35) {完备率\;→\;自我完备率};
+
+% 训练模型 → 训练自己
+\draw[-{Stealth[length=2mm, width=1.5mm]},
+      cAcc, line width=0.45pt, densely dashed]
+  (11.4, -0.1) .. controls (13, -0.75) and (15.5, -0.75) .. (17.1, -0.1);
+\node[font=\tiny, text=cLG, fill=white, inner sep=1pt]
+  at (14.25, -0.85) {训练模型\;→\;训练自己};
+
+% 序章悬念 → 第七章解答
+\draw[-{Stealth[length=2mm, width=1.5mm]},
+      cVLG, line width=0.45pt, densely dotted]
+  (0.0, -0.1) .. controls (3, -2.1) and (10, -2.1) .. (13.3, -0.1);
+\node[font=\tiny, text=cLG, fill=white, inner sep=1pt]
+  at (6.65, -2.15) {AI会统治人类吗？→\;沿现有架构，不会};
+
+% ═══════════════════════════════════════════════════
+% 8. 篇章标题 + 诗句 + 副标题
+% ═══════════════════════════════════════════════════
+\node[parttitle]              at ( 0.0,  7.2) {序章};
+\node[parttitle]              at ( 2.85, 7.2) {第一篇};
+\node[parttitle]              at ( 6.65, 7.2) {第二篇};
+\node[parttitle]              at (11.4,  7.2) {第三篇};
+\node[parttitle]              at (17.1,  7.2) {第四篇};
+\node[parttitle]              at (20.9,  7.2) {终章};
+
+\node[partpoem]               at ( 2.85, 6.7) {于远峦可达};
+\node[partpoem]               at ( 6.65, 6.7) {于微零可察};
+\node[partpoem]               at (11.4,  6.7) {于过往可溯};
+\node[partpoem]               at (17.1,  6.7) {于将来可塑};
+
+\node[partdesc]               at ( 2.85, 6.25) {突破物理世界的法则};
+\node[partdesc]               at ( 6.65, 6.25) {全知之眼的代价};
+\node[partdesc]               at (11.4,  6.25) {以史为镜的炼金术};
+\node[partdesc]               at (17.1,  6.25) {创世的权柄};
+
+% ═══════════════════════════════════════════════════
+% 9. 阅读体验标注（底部）
+% ═══════════════════════════════════════════════════
+\node[font=\tiny, text=cLG] at ( 2.85, -2.8) {轻松有趣};
+\node[font=\tiny, text=cLG] at ( 6.65, -2.8) {烧脑实用};
+\node[font=\tiny, text=cLG] at (11.4,  -2.8) {技术深水区};
+\node[font=\tiny, text=cLG] at (17.1,  -2.8) {最贴近生活};
+
+% ═══════════════════════════════════════════════════
+% 10. 标题 + 图例
+% ═══════════════════════════════════════════════════
+\node[font=\large\bfseries, text=cBlue, anchor=south west]
+  at (-1.0, 7.8) {《第五维度》阅读导航图};
+\node[font=\tiny, text=cLG, anchor=south west]
+  at (-1.0, -3.0) {山脊高度 $\approx$ 思想密度};
+
+% 阅读方向箭头
+\draw[-{Stealth[length=2.5mm]}, cLG, line width=0.4pt]
+  (-0.5, -3.3) -- (21.5, -3.3);
+\node[font=\tiny, text=cLG, anchor=east] at (21.5, -3.55) {阅读方向};
+
+\end{tikzpicture}
+\end{document}

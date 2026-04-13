@@ -1,0 +1,48 @@
+
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}[scale=0.70]
+  % Axes
+  \draw[->, thick, darkGray] (0, 0) -- (11.5, 0) node[below] {\small \ifdefined\ENGLISH Model Complexity (Parameters)\else 模型复杂度（参数量）\fi};
+  \draw[->, thick, darkGray] (0, 0) -- (0, 5.5) node[above] {\small \ifdefined\ENGLISH Test Error\else 测试误差\fi};
+
+  % Classic U-curve + interpolation peak + second descent
+  \draw[thick, color=primaryBlue]
+    plot[smooth, tension=0.7] coordinates {
+      (0.5, 4.8)
+      (1.5, 3.4)
+      (2.5, 2.6)
+      (3.3, 2.3)
+      (4.2, 2.6)
+      (4.9, 3.0)
+      (5.4, 3.5)
+      (5.7, 3.8)
+      (6.3, 3.0)
+      (7.0, 2.2)
+      (8.0, 1.5)
+      (9.0, 1.0)
+      (10.0, 0.7)
+      (11.0, 0.6)
+    };
+
+  % Interpolation threshold
+  \draw[dashed, border] (5.7, 0) -- (5.7, 5.0);
+  \node[below, coolGray, font=\footnotesize] at (5.7, -0.1) {\ifdefined\ENGLISH Interpolation threshold\else 内插阈值\fi};
+
+  % Region labels
+  \node[font=\footnotesize, text=coolGray] at (2.8, 5.0) {\ifdefined\ENGLISH Classical regime\else 经典区间\fi};
+  \node[font=\footnotesize, text=coolGray] at (8.5, 5.0) {\ifdefined\ENGLISH Modern regime\else 现代区间\fi};
+
+  % Annotation: classic sweet spot
+  \draw[dotted, border] (3.3, 2.3) -- (11.0, 2.3);
+  \draw[->, thin, coolGray] (3.3, 1.5) -- (3.3, 2.2);
+  \node[below, font=\scriptsize, text=coolGray] at (3.3, 1.5) {\ifdefined\ENGLISH Classical optimum\else 经典最优\fi};
+
+  % Annotation: second descent
+  \draw[->, thin, coolGray] (10.0, 1.5) -- (10.0, 0.8);
+\node[above, font=\scriptsize, text=coolGray] at (10.0, 1.5) {\ifdefined\ENGLISH Bigger is better?\else 越大越好？\fi};
+\end{tikzpicture}
+\caption[\ifdefined\ENGLISH Double descent curve\else 双下降曲线\fi]{\ifdefined\ENGLISH Double descent: test error decreases again beyond the interpolation threshold\else 双下降：跨过内插阈值后，测试误差再次下降\fi}
+\label{fig:double-descent}
+\end{figure}

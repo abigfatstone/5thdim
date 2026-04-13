@@ -1,0 +1,495 @@
+
+% Without exams, there is no learning; without data, there are no exams; without observation, there is no data; without questioning anomalous data, there are no new scientific discoveries
+
+% The importance of data: without Tycho's observational data, universal gravitation would never have been discovered. Yet at the same time, tiny anomalies often herald major scientific breakthroughs.
+% Here lies a possible paradox: before we had the ability to observe, all we had were the noise signals of the past. New signals made up only a tiny fraction and were treated as outliers. But after a discovery, the data distribution becomes an entirely new distribution.
+% The training data distribution must match the real-world distribution, so having data is a more fundamental problem than having a ruler. What data to collect is itself the question---as mentioned earlier, the more complete the data, the more valuable it is.
+% Occam's razor: models are lazy. For instance, a cancer screening model might latch onto some spurious signal rather than the genuinely discriminative features, performing beautifully on the training set but terribly in the real world.
+
+\poempart{Tracing the Past}{Alchemy in the Mirror of History}{This part focuses on ``The Invisible Dragon,'' ``The Moonlight Treasure Box,'' and ``The Ladder of Intelligence.''
+
+They answer three questions, respectively: How do we set the ruler by which AI learns? How does AI learn from historical data? And how far does AI still have to go---from a parrot that mimics speech to a scientist capable of self-directed exploration and evolution?
+
+\vspace{1em}
+
+This part ventures closer to the technical black box than the previous two, but the goal is not to train us as algorithm engineers. It is to help us understand how machines make trial-and-error attempts, how they are shaped by rulers, and how they grow capabilities from history. These things determine what tools, platforms, and rules we will face in the future. Only by understanding how AI learns can we know what to entrust to it---and what we must keep for ourselves.}
+
+% Without exams, there is no learning; without data, there are no exams; without observation, there is no data; without questioning anomalous data, there are no new scientific discoveries
+
+% The importance of data: without Tycho's observational data, universal gravitation would never have been discovered. Yet at the same time, tiny anomalies often herald major scientific breakthroughs.
+% Here lies a possible paradox: before we had the ability to observe, all we had were the noise signals of the past. New signals made up only a tiny fraction and were treated as outliers. But after a discovery, the data distribution becomes an entirely new distribution.
+% The training data distribution must match the real-world distribution, so having data is a more fundamental problem than having a ruler. What data to collect is itself the question---as mentioned earlier, the more complete the data, the more valuable it is.
+% Occam's razor: models are lazy. For instance, a cancer screening model might latch onto some spurious signal rather than the genuinely discriminative features, performing beautifully on the training set but terribly in the real world.
+
+
+\chapter{The Invisible Dragon---Rulers and Touchstones}
+
+\begin{myquote}
+Without exams, there is no learning. Without rulers, there is no direction.
+\end{myquote}
+
+\section{Sagan's Dragon}
+
+Carl Sagan once told a story so simple it borders on the absurd:
+
+\begin{myquote}
+``There's a fire-breathing dragon in my garage!''
+
+A friend rushes over excitedly, only to find an empty garage. ``Where's the dragon?\,''
+
+``Oh, it's invisible.''
+
+``Then let's sprinkle flour on the floor and look for footprints?\,''
+
+``It floats in the air.''
+
+``How about an infrared detector to measure the flame's temperature?\,''
+
+``Its fire gives off no heat.''
+
+``Spray paint to make it visible?\,''
+
+``It's incorporeal---paint won't stick.''
+\end{myquote}
+
+Sagan then posed a question: A dragon that cannot be seen, cannot be touched, emits no detectable heat, and has no measurable mass---what is the difference between such a dragon and no dragon at all?
+
+The answer is: \textbf{There is no difference.}
+
+\vspace{1em}
+
+This is not saying the dragon does not exist. It is saying: if something cannot be distinguished or evaluated in any way, then its existence is meaningless. This seemingly simple truth is the driving force behind machine learning---indeed, behind the entire evolution of intelligence.
+
+\newpage
+\section{The Ruler: Steering Wheel of Evolution}
+
+In everyday life, ability comes first, measurement second. A student learns mathematics first, then takes an exam to verify mastery. But in the world of AI, this relationship is inverted:
+
+The measuring standard comes first; ability then grows to fit the standard.
+
+\vspace{1em}
+
+
+An AI model will evolve in a given direction only when we provide it with an explicit scoring system (a loss function)---points for correct answers, deductions for wrong ones.
+This means the person who writes the exam holds the steering wheel of evolution.
+The exam is not for screening existing abilities---it determines what abilities will be created.
+
+\vspace{1em}
+
+Human society validated this principle long ago.
+
+China's imperial examination system endured for over a thousand years. By the late Ming and Qing dynasties, exam content had become tightly centered on Confucian classics and formulaic essays. And so, generation after generation, China's brightest minds were selected and trained to fit this particular exam. Those with talents in mechanics, navigation, trade, or science were either marginalized or forced to bend their gifts into the mold of the examination system.
+
+This is not to deny the value of the imperial examinations, but to say that exams are never neutral instruments of measurement.
+
+They are a form of selection pressure, shaping the intellectual architecture of a civilization.
+
+The imperial examination system at least allowed lives to exist outside the exam. But for a neural network, nothing exists outside its scoring rules. Its entire existence is devoted to driving the score as low as possible. The ruler does not merely select the best models---it fundamentally defines what ``best'' means.
+
+\vspace{1em}
+
+Sagan said: What cannot be measured does not exist.
+
+AI says: What cannot be measured cannot be learned.
+
+In other words: \textbf{The ruler is not for measuring dragons---it is for summoning them.}
+
+\begin{thinkbox}
+If some form of superintelligence has a mode of cognition that lies entirely beyond the human frame of reference, how would we even determine whether it exists?
+\end{thinkbox}
+
+\subsection{To Choose a Ruler Is to Choose a World}
+
+Since different rulers summon different dragons,
+
+choosing which ruler to use becomes a crucial question.
+
+\vspace{1em}
+
+Take classification tasks as an example. The most intuitive metric is accuracy:
+
+out of 100 samples, how many did the model predict correctly?
+
+\textbf{But accuracy can be deceiving.}
+
+Suppose we want to predict a rare disease with a prevalence of only 1\%.
+
+A model that does nothing---predicting ``healthy'' for everyone---achieves 99\% accuracy.
+
+Does this number look impressive? It does.
+
+Is it useful? Not in the slightest---it missed every single patient.
+
+\vspace{1em}
+
+We need more sensible rulers.
+
+Precision asks: Of those the model predicted as sick, how many are actually sick?
+
+Recall asks: Of all those who are actually sick, how many did the model find?
+
+These two metrics are often in tension.
+
+To improve precision, you must err on the side of caution---predict illness only when highly certain---but this means missing many atypical cases, driving recall down.
+
+To improve recall, you must ``cast a wide net''---flag anyone with the slightest suspicion---but this misidentifies many healthy people, driving precision down.
+
+\vspace{1em}
+
+Which to choose? It depends on the cost of error.
+
+Cancer screening: missing a cancer patient costs a life; misdiagnosing a healthy person costs only further tests. Recall matters more.
+
+Spam filtering: misclassifying an important email as spam could mean a missed opportunity; letting spam through only means a few extra clicks on the delete button. Precision matters more.
+
+\begin{importantbox}
+    The choice of metric is never a technical question---it is values made concrete.
+
+    To choose a ruler is to choose a world.
+
+\end{importantbox}
+
+\subsection{ImageNet: An Exam That Sparked a Revolution}
+If the exam determines what abilities will be created, then an exam of sufficient importance can redirect the evolution of an entire field.
+
+Before 2009, computer vision was a discipline built on hand-crafted design. Scientists worked like artisans, using mathematical formulas to manually define what constitutes an edge, a texture, a cat's ear. This was called feature engineering. They believed intelligence originated from algorithm design, and data was merely raw material for validating algorithms.
+Datasets at that time typically contained only a few thousand images, with each lab collecting, labeling, and evaluating on its own. Without a common exam, there was no commonly recognized progress.
+
+\vspace{1em}
+
+In 2009, Chinese-American scholar Fei-Fei Li did something that many at the time considered foolish: she organized a team to label 14 million images spanning over 20,000 categories\footnote{Deng et al., \textit{ImageNet: A Large-Scale Hierarchical Image Database}, CVPR, 2009.}. This scale far exceeded any dataset in common use at the time.
+Li's insight was that the bottleneck lay not in algorithms being insufficiently clever, but in data being insufficient to feed the algorithms. While everyone else was honing their blade techniques, she chose to forge a larger sword.
+
+\vspace{1em}
+
+This was ImageNet---the first public, standardized, large-scale visual exam.
+Starting in 2010, a competition was held every year: all contestants tested on the same images, scored by the same rules. It was the computer vision equivalent of the legendary duel on Mount Hua---masters clashing year after year, error rates falling steadily. In 2012, the deep neural network AlexNet took the stage, beating the runner-up by more than ten percentage points. This crushing victory ended the era of ``humans teaching computers how to see.''
+
+\vspace{1em}
+
+Its deeper impact was that it inaugurated a new training paradigm: \textbf{pre-training + fine-tuning.}
+
+A model trained on ImageNet, with its final layer removed, became a general-purpose visual feature extractor. Applied to entirely different domains such as medical imaging or satellite maps, it performed just as well. What the model had learned was not merely how to recognize cats and dogs, but how to see the world. ImageNet was, in effect, a liberal arts education for vision---subsequent specific tasks were merely vocational training built on that foundation. This is precisely the logic behind today's large language models like ChatGPT.
+
+This duel on Mount Hua continued through 2017---by then, AI's error rate had fallen below that of humans, and further competition served little purpose. But its historical mission was already accomplished.
+
+\textbf{A single exam summoned an entire era.}
+
+\section{How to Design a Good Exam}
+
+ImageNet proved that when everyone competes on the same exam, progress happens.
+
+But every coin has two sides. Where there are exams, there will be cheating.
+
+AI does not cheat intentionally, but it will take shortcuts. If we mix test questions into the practice problems, it will memorize the answers without hesitation---this is not the AI being cunning, but us writing a flawed exam. To prevent this, the exam must be divided into three parts.
+
+\textbf{The training set} is ``homework.'' The model makes trial-and-error attempts during training, adjusting weights and groping for patterns---this is its sole source of knowledge.
+
+\textbf{The validation set} is a ``practice exam,'' glanced at occasionally between training sessions to calibrate the learning strategy---is it learning too fast, or drifting off course?---but its questions are never incorporated into training.
+
+\textbf{The test set} is the ``final exam,'' strictly off-limits during training. Only when the model can answer questions it has never seen before can we say it has truly grasped the underlying patterns, rather than memorized answers by rote.
+
+Imagine a student who has memorized every problem in \textit{Ten Years of College Entrance Exams} cover to cover, down to the printing errors. Encountering the original problem on exam day, the student scores perfectly---but change one number and the student is lost. This is \textbf{overfitting}---the model has memorized the answers without grasping the real patterns.
+
+\vspace{1em}
+
+The three-way split seems perfect, yet it conceals a hidden risk: the split itself is random.
+If the practice problems happen to be easy, we overestimate the model's ability; if they happen to be hard, we underestimate it. Worse still, if the data is scarce to begin with---not even enough study material to go around---how can the model possibly learn well?
+
+\vspace{1em}
+
+One solution is rotation. Divide the data into ten parts; each round, use eight for training, one for validation, one for testing, and rotate ten times. This way, every data point serves once as an exam question and multiple times as training material. The data is utilized to its fullest, and the evaluation becomes more stable---no longer hostage to the accident of a single split. In machine learning, this is called cross-validation\footnote{Cross-validation addresses how to reliably evaluate a model, not how to train the final model. After evaluation, the common practice is to retrain a final version using all the data.}.
+
+But the stability that rotation provides comes at a cost: the computational burden multiplies. When data is abundant and the split sufficiently random, a simple three-way division often suffices. Which approach to choose depends on how badly we need reliability---and how much computing power we are willing to spend for it.
+
+\newpage
+\subsection{Data Leakage: An Exam With the Answers Baked In}
+
+The logic of machine learning is simple: learn from one portion of data, verify with another.
+The model learns patterns from training data, then applies those patterns to unknown samples.
+
+But what counts as known, and what as unknown? The boundary is not as clear as it seems.
+
+\vspace{1em}
+
+Suppose we want to predict whether a person will develop diabetes. Weight, age, family history---these are obviously known. But what if insulin injection frequency appears among the features?
+
+This is called data leakage. When information that should be unavailable at prediction time infiltrates the training process---even the faintest trace---the model is no longer making inferences. It is \textbf{peeking at the answers.}
+
+\vspace{1em}
+
+Leakage wears many faces.
+
+Some leakage stems from \textbf{inconsistent data distributions}. For example, data sorted by category---cats first, dogs second---split without shuffling, so the training set contains only cats and the test set only dogs.
+
+Some leakage hides within \textbf{the data itself}. For instance, the training data includes national ID numbers, and the task is to predict gender---one need only check whether the second-to-last digit of the ID is odd or even.
+
+Some leakage lurks in \textbf{correlations between samples}. For example, a single patient has three examinations on record; the three entries are randomly scattered, with two landing in the training set and one in the test set. The model has not learned to diagnose---it has learned to recognize individuals.
+
+Some leakage hides in \textbf{time series}. Predicting whether a user will place an order---if the features include the return reason, that is leakage, because returns happen after purchases. We have used future information to predict the past.
+
+Still other leakage hides in \textbf{global preprocessing}. For example, we construct a feature: a data point's ratio relative to the mean. If we compute the \textbf{mean} using the entire dataset (including the test set), then although the model has not seen the specific test samples, it has already sensed their statistical silhouette.
+
+\vspace{1em}
+
+There is only one test: \textbf{At the moment of making the decision, would this information actually be available?}
+
+Because the model will ultimately face the real world---and in the real world, there is no peeking at the answers.
+
+\subsection{The Bias--Variance Tradeoff: The Art of Grading}
+
+When the model hands in its answer sheet, how do we assess its ability?
+
+% Imagine shooting arrows at a target.
+
+% A \textbf{high-bias} archer shoots with consistency---every arrow landing in roughly the same spot---but far from the bullseye. The archer has a stubborn stance, unyielding regardless of which way the wind blows. This is \textbf{arrogance}: I don't care what the data looks like; I've decided the world is like this.
+
+% A \textbf{high-variance} archer sometimes hits dead center, sometimes misses by a mile. Whichever way the wind blows, the archer follows---utterly chaotic. This is \textbf{blind obedience}: I become whatever the data looks like, with no judgment of my own.
+
+% The best archer? Arrows clustered around the bullseye. Adjusting for wind, but never led by the nose.
+
+% \textbf{Open-minded, yet with conviction.}
+
+% \vspace{1em}
+
+Imagine training cat-recognition models across three parallel universes: in Universe A, every cat is playing on a lawn; in Universe B, every cat photo has a watermark; in Universe C, every cat is hiding in dark shadows.
+
+\vspace{1em}
+
+The arrogant model learns only that pointy ears = cat. The models trained across all three universes turn out identical---it ignores the details of the data entirely. Stable, but stable in the wrong place.
+
+The obedient model takes every detail at face value. Universe A's model learns that grass means cat; Universe B's model learns that watermarks mean cat; Universe C's model learns that darkness means cat. It is so compliant that it has lost itself.
+
+\vspace{1em}
+
+The tragedy is this: model complexity is a single dial that can only slide between arrogance and obedience.
+
+The arrogant model cannot learn the true patterns (high bias), yet it is stubborn as a mule (low variance).
+
+The obedient model can learn any pattern (low bias), yet it is skittish as a rabbit (high variance).
+
+Too simple, underfitting; too complex, overfitting. This is the \textbf{bias--variance tradeoff}.
+
+\vspace{1em}
+
+How do we diagnose which disease the model suffers from?
+
+Symptoms of arrogance: both training error and validation error are high. Adding more data barely helps.
+
+Symptoms of obedience: training error is impressively low, but validation error is absurdly high. Yet there is hope: as the data grows, the two errors gradually converge---the more data there is, the less viable rote memorization becomes, and the model is forced to learn real patterns.
+
+\vspace{1em}
+
+We can write the expected error\footnote{The bias--variance decomposition is derived for MSE (mean squared error); the bias term, being squared, is highly sensitive to outliers. A single outlier can skew the entire curve.} as the following pseudo-formula:
+
+\begin{equation*}
+\text{Expected Error} = \text{Bias}^2 + \text{Variance} + \text{Noise}
+\end{equation*}
+
+We can control only bias and variance.
+The best model is neither the most arrogant nor the most obedient, but the one that strikes a balance between the two---minimizing total error.
+
+Noise is the inherent randomness of the data itself, irreducible---this is the limit of the world.
+
+
+% Kepler was convinced that planetary orbits were perfect circles. This was not his personal prejudice alone, but a consensus spanning two millennia from Plato to Copernicus: celestial motion must be circular, because the circle is the most perfect geometric shape, and the heavens should be perfect.
+
+\subsection{Noise or Signal: The Obsession With 8 Arcminutes}
+
+Sometimes, error is not noise---it is signal.
+
+Tycho Brahe was the greatest naked-eye observer in the history of astronomy. Before the invention of the telescope, he devoted his entire life to recording the positions of the planets, achieving a precision at the very limits of human eyesight. He was especially obsessed with Mars---that red planet with its bewildering orbit.
+
+In 1601, Tycho died, and Johannes Kepler inherited this precious trove of data.
+He tried to fit Tycho's Mars data with a circular orbit. The result always fell short.
+
+\vspace{1em}
+
+By how much? 8 arcminutes.
+
+What does 8 arcminutes look like? Roughly one-quarter the apparent diameter of the full moon.
+
+For most astronomers, this error could easily be chalked up to measurement noise---
+
+after all, Tycho used the naked eye, not a laser rangefinder.
+
+\vspace{1em}
+
+But Kepler would not dismiss it.
+
+He chose to trust Tycho's data. If the data and the model conflicted, then perhaps the model was wrong.
+
+Kepler spent six years trying every conceivable curve.
+
+In the end, he abandoned the fixation on circles and discovered that Mars traces an ellipse with the Sun at one focus.
+
+\vspace{1em}
+
+This is Kepler's First Law.
+
+8 arcminutes---the whole of modern astronomy was born from an obsession with 8 arcminutes.
+
+It shattered two millennia of faith in the perfect circle and paved the way for the law of universal gravitation.
+
+\vspace{1em}
+
+In the language of machine learning, Kepler was facing underfitting:
+
+his circular orbit model was too simple to capture the true elliptical pattern in the data.
+
+Those 8 arcminutes of error were not noise---they were signal.
+
+The data was telling him: ``Your assumption is wrong.''
+
+\vspace{1em}
+
+Tycho represented a high-quality validation set.
+
+Kepler represented a researcher willing to listen to anomalous data.
+
+From a mediocre model to a revolutionary breakthrough, sometimes only one choice separates them:
+
+to dismiss the anomaly as noise, \textbf{or to treat it as a signal worth pursuing.}
+
+\subsection{The Dark Night Sky: Olbers' Paradox}
+
+Kepler's question arose from an excess of error. There is another kind of anomaly: missing signal.
+
+There is a question so simple that any child might ask it:
+
+\textbf{Why is the night sky dark?}
+
+\vspace{1em}
+
+As children, we take it for granted: no sun, of course it is dark.
+
+But think about it---the universe contains countless stars.
+
+If the universe were infinite, then in every direction there should be a star, and the night sky should blaze as bright as day, as scorching and blinding as the surface of the Sun. Yet when we look up, what we see is darkness.
+
+\vspace{1em}
+
+This is Olbers' paradox. Not until the twentieth century did the answer emerge.
+
+The night sky is dark because the universe has a beginning---the Big Bang.
+
+Light takes time to travel, and the age of the universe is finite.
+
+The light from distant stars has not yet had time to reach our eyes.
+
+The night sky is dark because the universe is expanding, and distant galaxies are receding from us.
+
+Their light is stretched, redshifted---much of it now beyond the visible spectrum.
+
+A child's question, yet its answer is the cornerstone of modern cosmology.
+
+\vspace{1em}
+
+Kepler faced a positive residual: the model predicted A; the data showed A + 8 arcminutes.
+
+Olbers' paradox is a negative residual: the model predicted a sky ablaze with light; the data showed darkness.
+
+In the language of machine learning, both are the same in essence---
+
+a loss function that is not zero, data telling us: your model is wrong.
+
+The most profound discoveries in the history of science are often hidden in the most plainly obvious anomalies.
+
+\begin{thinkbox}
+When a model's prediction deviates from reality, our habit is to adjust the model's parameters.
+
+But how many times has the root cause of the deviation been not wrong parameters, but wrong assumptions?
+
+Those plainly obvious little anomalies in training neural networks may be waiting for their Kepler---or their Olbers.
+\end{thinkbox}
+
+\newpage
+\section{The Real World: The Ultimate Touchstone}
+
+Back to Sagan's dragon. Perhaps the dragon exists, but the detector is wrong.
+
+This idea rests on a premise: the data we collect determines the patterns we can discover. The edifice of machine learning is built on a simple article of faith---the world seen during training and the world faced during prediction are the same world.
+
+\vspace{1em}
+
+But the question is: how do we know that what we have sampled is the real world?
+
+The answer is: \textbf{We cannot be entirely certain.}
+At least from the observer's perspective, the world we see is always shaped by how we define variables, draw boundaries, and choose instruments of observation. We may not be in direct contact with ``the complete real world''---we are more likely touching a cross-section carved out by our method of observation.
+
+\vspace{1em}
+
+In the 1970s, astronomer Vera Rubin observed an anomaly in the rotation of galaxies: stars at the edges of galaxies were spinning far too fast. According to Newtonian gravity, they should have been flung outward---but they were not. Within the existing framework, this implied the existence of vast quantities of matter we cannot see---dark matter. It does not emit light, it does not absorb light; it interacts only through gravity.
+
+\vspace{1em}
+
+We use something invisible to explain a visible anomaly. Others have proposed an alternative explanation: perhaps there is nothing extra---perhaps it is the law of gravity itself that needs correction at large scales. Whether the answer is dark matter or a rewriting of gravity, the key is the same: what truly forces us to revise our theories is not elegant equations, but the real world's refusal to cooperate.
+
+\vspace{1em}
+
+An exam can summon a dragon, but only the real world can decide how long that dragon survives.
+Achieving a perfect score on a closed benchmark does not mean truly understanding the world; if a model breaks down the moment it steps outside the laboratory, even the most impressive score is nothing but an illusion.
+
+\begin{thinkbox}
+The same set of observational data---one framework says the universe contains invisible components; another framework says our rules for understanding the universe are themselves wrong.
+
+Fifty years have passed, and we still do not know which framework is correct. Perhaps neither is?
+\end{thinkbox}
+
+
+\newpage
+\section{Closing: Light in the Cracks}
+
+This chapter journeyed from Sagan's dragon to dark matter.
+
+What we have been asking, again and again, is not the answer itself, but three more fundamental questions:
+
+Who writes the exam?
+Who grades the answers?
+Who has the authority to decide what counts as true?
+
+\vspace{1em}
+
+We have spent thousands of years without finding ultimate answers to these questions.
+
+All we have done is propose new rulers, new frameworks, new ways of judging,
+
+only to discover, time and again:
+
+every ruler carries its own bias; every framework has its own blind spot.
+
+\vspace{1em}
+
+Perhaps this is what Sagan's dragon truly wants to tell us:
+
+It is not that the dragon does not exist, but that existence itself depends on how we choose to measure.
+
+The ruler summons the dragon---and at the same time, defines the dragon's shape.
+
+\vspace{1em}
+
+The history of civilization is itself a process of continually breaking through cognitive cocoons.
+
+Every breakthrough begins with someone noticing:
+
+that 8-arcminute discrepancy, that night sky that should not be dark, those galactic edges spinning too fast.
+
+True alchemy is not searching for the perfect circle in the dusty archives of data,
+
+but doing as Kepler did---in the crack between model and reality,
+
+capturing that fleeting 8 arcminutes.
+
+\vspace{1em}
+
+For it is precisely in that crack that \textbf{the light comes flooding in.}
+
+\begin{thinkbox}
+What we are willing to accept as a good answer
+
+determines what kind of AI we will get.
+
+This choice is less a technical decision
+
+than a declaration about the kind of future we want.
+\end{thinkbox}

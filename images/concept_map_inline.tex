@@ -1,0 +1,139 @@
+% ═══════════════════════════════════════════════════════════════
+% 概念结构图 ・ 内联版
+% ═══════════════════════════════════════════════════════════════
+\newpage
+
+\definecolor{cmB}{cmyk}{0.55, 0.08, 0, 0.04}
+\definecolor{cmO}{cmyk}{0, 0.38, 0.65, 0.03}
+\definecolor{cmG}{cmyk}{0, 0, 0, 0.52}
+\definecolor{cmLG}{cmyk}{0, 0, 0, 0.24}
+
+\noindent
+\resizebox{!}{\textheight}{%
+\begin{tikzpicture}[x=1cm, y=1cm]
+
+% 版心比 109mm:168mm = 0.649
+% 宽10.9cm → 高 = 10.9/0.649 = 16.8cm
+\useasboundingbox (-5.45, -8.6) rectangle (5.45, 8.2);
+
+% ═══════════════════════════════════════════════════
+% 溪流 — 七段，首尾严格对齐
+%
+% 节点y坐标：7.0, 4.5, 2.0, -0.5 | -3.5, -6.5
+% 间距：上四个各2.5cm，留白3cm，下两个3cm
+% ═══════════════════════════════════════════════════
+
+% 源头（简洁起笔）
+\draw[cmB, line width=2pt, opacity=0.35]
+  (0, 7.5) .. controls (-0.15, 7.3) and (0.15, 7.1) .. (0, 7.0);
+
+% 段1→2
+\draw[cmB, line width=2pt, opacity=0.55]
+  (0, 7.0) .. controls (-0.7, 6.0) and (0.7, 5.5) .. (0, 4.5);
+% 段2→3
+\draw[cmB!80!cmO, line width=2pt, opacity=0.5]
+  (0, 4.5) .. controls (-0.6, 3.5) and (0.6, 3.0) .. (0, 2.0);
+% 段3→4
+\draw[cmB!60!cmO, line width=2pt, opacity=0.5]
+  (0, 2.0) .. controls (-0.5, 1.0) and (0.5, 0.5) .. (0, -0.5);
+% 段4→5（穿过留白）
+\draw[cmB!35!cmO, line width=2pt, opacity=0.4]
+  (0, -0.5) .. controls (0.4, -1.5) and (-0.4, -2.5) .. (0, -3.5);
+% 段5→6
+\draw[cmO!80, line width=2pt, opacity=0.55]
+  (0, -3.5) .. controls (0.6, -4.5) and (-0.6, -5.5) .. (0, -6.5);
+
+% 入海（小扇形，微微张开）
+\fill[cmO, opacity=0.08]
+  (0, -6.5) .. controls (-0.4, -7.0) and (-0.9, -7.5) .. (-1.2, -7.8)
+  -- (1.2, -7.8)
+  .. controls (0.9, -7.5) and (0.4, -7.0) .. (0, -6.5) -- cycle;
+
+% ═══════════════════════════════════════════════════
+% 六个节点
+% ═══════════════════════════════════════════════════
+
+\fill[cmB!16]        (0, 7.0) circle (2.2mm);
+\fill[cmB!12]        (0, 4.5) circle (2.2mm);
+\fill[cmB!8!cmO!5]   (0, 2.0) circle (2.2mm);
+\fill[cmO!6!cmB!8]   (0,-0.5) circle (2.2mm);
+
+\fill[cmO!12]        (0,-3.5) circle (2.2mm);
+\fill[cmO!18]        (0,-6.5) circle (3mm);
+
+% ═══════════════════════════════════════════════════
+% 翻转虚线（步骤4与步骤5之间）
+% ═══════════════════════════════════════════════════
+
+\draw[cmLG, line width=0.3pt, densely dotted] (-3.2, -2.4) -- (3.2, -2.4);
+\node[font=\footnotesize, text=cmLG, fill=white, inner sep=1.5pt]
+  at (0, -2.4) {\ifdefined\ENGLISH Flip it\else 反过来\fi};
+
+% ═══════════════════════════════════════════════════
+% 文字
+% ═══════════════════════════════════════════════════
+
+% ── 1. (右) ──
+\node[font=\small\bfseries, text=cmB!80!black, anchor=west]
+  at (0.55, 7.0) {\ifdefined\ENGLISH Completeness rate defines ``distributional consistency''\else 完备率定义了"分布一致"的标准\fi};
+\node[font=\scriptsize, text=cmG, anchor=north west, text width=46mm]
+  at (0.55, 6.6) {\ifdefined\ENGLISH Data distribution must match problem distribution. KB of complete data beats PB of noise\else 数据的分布要和问题的分布一致。KB级完备数据，胜过PB级噪声\fi};
+\node[font=\footnotesize, text=cmG, anchor=east]
+  at (-0.55, 7.0) {\ifdefined\ENGLISH Shadow Clone $\cdot$ Microscope\else 影分身术 ・ 显微镜\fi};
+
+% ── 2. (左) ──
+\node[font=\small\bfseries, text=cmB!80!black, anchor=east]
+  at (-0.55, 4.5) {\ifdefined\ENGLISH IID Assumption\else 独立同分布(IID)假设\fi};
+\node[font=\scriptsize, text=cmG, anchor=north east, text width=46mm]
+  at (-0.55, 4.1)
+  {\ifdefined\ENGLISH Data is shuffled randomly; each batch shares the same distribution. Temporal signals are lost, but this makes AI trainable.\else 数据被随机打散，每批次分布相同，丢失了数据的先后信号，但这让AI可以被训练。\fi};
+\node[font=\footnotesize, text=cmG, anchor=west]
+  at (0.55, 4.5) {\ifdefined\ENGLISH Moonlight Box $\cdot$ Invisible Dragon\else 月光宝盒 ・ 看不见的龙\fi};
+
+% ── 3. (右) ──
+\node[font=\small\bfseries, text=cmG!85, anchor=west]
+  at (0.55, 2.0) {\ifdefined\ENGLISH Out-of-distribution (OOD) data is hard to express\else 分布外数据(OOD)难以被表达\fi};
+\node[font=\scriptsize, text=cmG, anchor=north west, text width=46mm]
+  at (0.55, 1.6)
+  {\ifdefined\ENGLISH Individual data is like a drop in the ocean; signals and anomalies are averaged away as noise\else 个体数据就像大海里的一滴水，信号和异常一起被当成噪声平均掉\fi};
+\node[font=\footnotesize, text=cmG, anchor=east]
+  at (-0.55, 2.0) {\ifdefined\ENGLISH Intelligence Ladder $\cdot$ Stealth Codex\else 智能的阶梯 ・ 遁甲天书\fi};
+
+% ── 4. (左) ──
+\node[font=\small\bfseries, text=cmO!90!cmB!90, anchor=east]
+  at (-0.6, -0.5) {\ifdefined\ENGLISH AI's limits call for a paradigm shift\else AI的局限，需要范式突破\fi};
+\node[font=\scriptsize, text=cmG, anchor=north east, text width=46mm]
+  at (-0.6, -0.9)
+  {\ifdefined\ENGLISH Weights frozen, unable to learn from new experience; models fit the in-distribution average. OOD is a paradigm limit\else 权重冻结，无法从新经验中持续学习；模型倾向于拟合分布内平均，OOD是范式局限\fi};
+\node[font=\footnotesize, text=cmG, anchor=west]
+  at (0.6, -0.5) {\ifdefined\ENGLISH Intelligence Ladder\else 智能的阶梯\fi};
+
+% ════════════ 反过来 ════════════
+
+% ── 5. (右) ──
+\node[font=\small\bfseries, text=cmO!80!black, anchor=west]
+  at (0.55, -3.5) {\ifdefined\ENGLISH AI's limits are humanity's opportunity\else AI的局限，恰是人的机会\fi};
+\node[font=\scriptsize, text=cmG, anchor=north west, text width=46mm]
+  at (0.55, -3.9)
+  {\ifdefined\ENGLISH AI lifts everyone to 80; 80 becomes the new zero. The cheaper the standard answer, the more precious it is to be different\else AI把所有人抬到80分，80分成了新的零分。标准答案越便宜，与众不同就越珍贵\fi};
+\node[font=\footnotesize, text=cmG, anchor=east]
+  at (-0.55, -3.5) {\ifdefined\ENGLISH Absorption Skill $\cdot$ Tendon Classic\else 吸星大法 ・ 易筋经\fi};
+
+% ── 6. (左) ──
+\node[font=\normalsize\bfseries, text=cmO!75!black, anchor=east]
+  at (-0.85, -6.5) {\ifdefined\ENGLISH Become out-of-distribution\else 成为分布之外\fi};
+\node[font=\scriptsize, text=cmG, anchor=north east, text width=46mm]
+  at (-0.85, -6.9)
+  {\ifdefined\ENGLISH Train yourself the way you'd train a model. Give AI what's quick to verify; keep what's slow to verify\else 用训练模型的方式训练自己。验证快的交给AI，验证慢的留给自己\fi};
+\node[font=\footnotesize, text=cmG, anchor=west]
+  at (0.85, -6.5) {\ifdefined\ENGLISH Abundance Society $\cdot$ Change \& Constants\else 丰裕社会 ・ 变与不变\fi};
+
+% ═══════════════════════════════════════════════════
+% 源头与入海标注
+% ═══════════════════════════════════════════════════
+
+\node[font=\footnotesize, text=cmB!40] at (0, 8.0) {\ifdefined\ENGLISH Within the distribution\else 分布之内\fi};
+\node[font=\footnotesize, text=cmO!35] at (0, -8.3) {\ifdefined\ENGLISH Beyond the distribution\else 分布之外\fi};
+
+\end{tikzpicture}%
+}% end resizebox

@@ -1,0 +1,93 @@
+\documentclass[a4paper,openany]{extbook}
+
+% ===============================
+% Color System
+% ===============================
+\usepackage{xcolor}
+\usepackage{tikz}
+\usepackage{tcolorbox}
+\usepackage{cancel}
+\usepackage{graphicx}
+\usepackage{bm}
+\usepackage{booktabs}
+\usepackage{pdflscape}
+\usetikzlibrary{positioning, calc, shapes, backgrounds, fit}
+\usetikzlibrary{arrows.meta, decorations.pathmorphing, decorations.pathreplacing }
+\tcbuselibrary{skins, breakable}
+
+% Primary palette (CMYK, C+K channels only)
+\definecolor{primaryBlue}{cmyk}{1.0, 0, 0, 0.5}
+\definecolor{border}{cmyk}{0.00, 0.00, 0.00, 0.25}
+\definecolor{darkGray}{cmyk}{0, 0, 0, 1 }
+\definecolor{coolGray}{cmyk}{0.02, 0, 0, 0.15}
+\definecolor{lightGray}{cmyk}{0.02, 0, 0, 0.1}
+\definecolor{paleGray}{cmyk}{0.02, 0, 0,  0.05}
+% --- Cyan-blue palette (C+K channels) ---
+\definecolor{darkCyan}{cmyk}{1.0, 0, 0, 0.3}
+\definecolor{cyan}{cmyk}{0.85, 0, 0, 0.1}
+\definecolor{lightCyan}{cmyk}{0.5, 0, 0, 0}
+\definecolor{paleCyan}{cmyk}{0.25, 0, 0, 0}
+% === Accent colors ===
+\definecolor{accentCyan}{cmyk}{0.7, 0, 0, 0.05}
+\definecolor{midCyan}{cmyk}{0.4, 0, 0, 0.05}
+\definecolor{softCyan}{cmyk}{0.15, 0, 0, 0}
+
+% Feature switches
+\def\uploadfont{}                                      % Use bundled fonts
+\def\costomizetitlepage{}                              % Custom title page
+\def\footinfo{}                                        % Footer info
+\def\bleed{}                                           % Bleed
+% \def\aiwatermark{}                                   % AI co-creation watermark
+
+% ===============================
+% Language: English edition
+\def\ENGLISH{}
+% ===============================
+\input{book_meta}
+
+% Page layout & fonts
+\input{font/formats}
+\input{backcover}
+
+\begin{document}
+
+\mytitlepage
+\input{sections_en/000_blurb_en}
+\input{sections_en/000_highlights_en}
+\input{sections_en/000_first_reader_en}
+\usefrontplainstyle
+\pagestyle{frontstyle}
+\tableofcontents
+
+\input{sections_en/000_preface_en}
+
+\begin{center}
+  \rotatebox{90}{\input{images/reading_map_inline}}
+\end{center}
+
+\input{sections_en/001_fifth_dimension_en}
+\input{sections_en/011_teleportation_array_en}
+\input{sections_en/012_shadow_clone_en}
+\input{sections_en/021_data_microscope_en}
+\input{sections_en/022_stealth_codex_en}
+
+\input{sections_en/031_invisible_dragon_en}
+\input{sections_en/032_moonlight_box_en}
+\input{sections_en/033_intelligence_ladder_en}
+
+\input{sections_en/041_absorption_skill_en}
+\input{sections_en/042_muscle_tendon_classic_en}
+\input{sections_en/044_abundance_society_en}
+
+\input{images/concept_map_inline}
+
+\input{sections_en/051_change_and_constants_en}
+
+\input{sections_en/061_first_reader_letter_en}
+\input{sections_en/062_acknowledgements_en}
+
+\input{sections_en/ref__en}
+\input{sections_en/ref_org_reshaping_en}
+\input{sections_en/ref_llm_os_en}
+
+\end{document}

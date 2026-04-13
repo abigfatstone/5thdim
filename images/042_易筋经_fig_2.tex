@@ -1,0 +1,32 @@
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[
+  box/.style={rectangle, rounded corners=4pt, draw=border, fill=paleGray, minimum width=2.6cm, minimum height=0.9cm, align=center, font=\small},
+  arrow/.style={-{Stealth[length=2.5mm]}, line width=1pt, darkGray},
+  label/.style={font=\footnotesize, darkGray}
+]
+
+\node[box] (X) at (0, 0) {$X$\\\ifdefined\ENGLISH Public Knowledge\else 公开知识\fi};
+\node[box] (C) at (4, 0) {$X + C$\\\ifdefined\ENGLISH +Private Context\else +私有上下文\fi};
+\node[box] (T) at (8, 0) {$X + C + T$\\\ifdefined\ENGLISH +Taste\else +品味\fi};
+\node[box] (Y) at (8, -2.5) {$Y$\\\ifdefined\ENGLISH Output\else 输出\fi};
+\node[box] (deploy) at (4, -2.5) {\ifdefined\ENGLISH Deploy\else 部署\fi\\\ifdefined\ENGLISH Real World\else 真实世界\fi};
+\node[box] (feedback) at (0, -2.5) {\ifdefined\ENGLISH Feedback\else 反馈\fi\\\ifdefined\ENGLISH Logging\else 日志化\fi};
+
+\draw[arrow] (X) -- (C);
+\draw[arrow] (C) -- (T);
+\draw[arrow] (T.east) -- ++(0.5, 0) -- ++(0, -2.5) -- (Y.east);
+\draw[arrow] (Y) -- (deploy);
+\draw[arrow] (deploy) -- (feedback);
+
+% 虚线回流箭头
+\draw[arrow, dashed] (feedback.north) -- (0, -0.9) -- (4, -0.9) -- (C.south);
+\node[label, above] at (2, -0.9) {\ifdefined\ENGLISH Update\else 更新\fi $C$};
+
+\draw[arrow, dashed] (feedback.north) -- (0, -1.5) -- (8, -1.5) -- (T.south);
+\node[label, above] at (4, -1.5) {\ifdefined\ENGLISH Update\else 更新\fi $T$};
+
+\end{tikzpicture}
+\caption{\ifdefined\ENGLISH $Y$ feeds back to update $C$ and $T$\else $Y$回流更新$C$和$T$\fi}
+\label{fig:y-feedback}
+\end{figure}

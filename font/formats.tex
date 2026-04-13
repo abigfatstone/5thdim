@@ -1,0 +1,874 @@
+
+% ===============================
+% 版式与结构配置：font/formats.tex
+% ===============================
+
+% 字体配置（依赖 font/font.tex）
+\input{font/font}
+
+% -------------------------------
+% 基本宏包
+% -------------------------------
+\usepackage{indentfirst}   % 首段缩进
+\usepackage{amsmath}       % 数学公式（支持 \text 命令）
+\usepackage{amssymb}       % 数学符号（支持 \leqslant 等）
+
+\usepackage{hyperref}      % 超链接（彩色链接）
+\hypersetup{
+    colorlinks=true,
+    linkcolor=black,
+    urlcolor=primaryBlue,
+    citecolor=primaryBlue
+}
+
+\usepackage{geometry}      % 页面几何
+\usepackage{chngcntr}      % 提供 \counterwithin
+\usepackage{zref-perpage}  % 脚注每页重新编号
+% 使用 tocloft 替代 titletoc 和 titlesec（避免与目录冲突）
+\usepackage{tocloft}       % 目录格式
+\usepackage{fancyhdr}      % 页眉页脚
+\usepackage{emptypage}     % 空白页无页眉页脚
+\usepackage{setspace}      % 行距
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{etoolbox}
+\usepackage{tikz}          % 用于绘制装饰元素
+\usetikzlibrary{shapes,decorations}
+
+% 图表标题
+\ifdefined\ENGLISH
+  \renewcommand{\figurename}{Figure}
+  \renewcommand{\tablename}{Table}
+\else
+  \renewcommand{\figurename}{图}
+  \renewcommand{\tablename}{表}
+\fi
+\DeclareCaptionLabelSeparator{twospace}{\enspace\enspace}
+\captionsetup[figure]{labelsep=twospace}
+\captionsetup[table]{labelsep=twospace}
+
+% -------------------------------
+% 全局行距与段距
+% -------------------------------
+% 书籍风格：舒适的行距
+\setstretch{1.4}
+% 段首不缩进
+\setlength{\parindent}{0pt}
+% 段与段之间不额外加竖直距离
+\setlength{\parskip}{0pt}
+
+% 列表环境间距优化（极度紧凑）
+\setlength{\itemsep}{0pt}
+\setlength{\parsep}{0pt}
+\setlength{\topsep}{0pt}
+\setlength{\partopsep}{0pt}
+
+% 在列表环境前后减少额外空白
+\makeatletter
+\AtBeginDocument{%
+  \setlength{\@listi}{\itemsep=0pt \parsep=0pt \topsep=0pt \partopsep=0pt}
+  \setlength{\@listii}{\itemsep=0pt \parsep=0pt \topsep=0pt \partopsep=0pt}
+}
+\makeatother
+
+% 让列表环境使用稍紧凑的行距
+\AtBeginEnvironment{itemize}{\setstretch{0.2}}
+\AtBeginEnvironment{enumerate}{\setstretch{0.2}}
+
+% -------------------------------
+% 页面尺寸与边距（默认 A5）
+% -------------------------------
+\newlength{\pw}
+\newlength{\ph}
+\setlength{\pw}{145mm}
+\setlength{\ph}{210mm}
+
+\newlength{\bleedlen}
+\setlength{\bleedlen}{0mm}
+
+\newlength{\ptop}
+\newlength{\pbottom}
+\newlength{\pinner}
+\newlength{\pouter}
+\newlength{\phsep}
+\newlength{\pfskip}
+
+% 基本边距，可按需要略微调整
+\setlength{\ptop}{18mm}      % 上边距
+\setlength{\pbottom}{20mm}   % 下边距
+\setlength{\pinner}{20mm}    % 书芯内侧（装订侧）边距
+\setlength{\pouter}{16mm}    % 外侧边距
+\setlength{\phsep}{8mm}      % 页眉与正文距离
+\setlength{\pfskip}{8mm}    % 页脚与正文距离（footinfo 用）
+
+\ifdefined\bleed
+    \addtolength{\bleedlen}{3mm}
+    \addtolength{\pw}{\bleedlen}
+    \addtolength{\pw}{\bleedlen}
+    \addtolength{\ph}{\bleedlen}
+    \addtolength{\ph}{\bleedlen}
+    \addtolength{\ptop}{\bleedlen}
+    \addtolength{\pbottom}{\bleedlen}
+    \addtolength{\pinner}{\bleedlen}
+    \addtolength{\pouter}{\bleedlen}
+\fi
+
+% 主文页面几何
+\ifdefined\footinfo
+    \geometry{
+        paperwidth=\pw,
+        paperheight=\ph,
+        top=\ptop,
+        bottom=\pbottom,
+        outer=\pouter,
+        inner=\pinner,
+        footskip=\pfskip,
+    }
+\else
+    \geometry{
+        paperwidth=\pw,
+        paperheight=\ph,
+        top=\ptop,
+        bottom=\pbottom,
+        outer=\pouter,
+        inner=\pinner,
+        headsep=\phsep,
+    }
+\fi
+
+
+% -------------------------------
+% 目录计数与格式
+% -------------------------------
+% section/subsection 跟随更高层重置
+\counterwithin{section}{chapter}
+\counterwithin{subsection}{section}
+
+% 只显示 chapter 编号，不显示 section/subsection 编号
+\setcounter{secnumdepth}{0}
+
+% 目录标题和条目格式（简洁风格）
+\ifdefined\ENGLISH
+  \renewcommand{\contentsname}{Contents}
+\else
+  \renewcommand{\contentsname}{目\hspace{0.75em}录}
+\fi
+
+% 页码宽度设置
+\makeatletter
+\renewcommand{\@pnumwidth}{7mm}
+% \@addtoreset{chapter}{part}     % 不重置章节编号，保持连续
+\makeatother
+
+% -------------------------------
+% 目录样式配置（tocloft）- 统一黑色
+% -------------------------------
+% Part 目录样式
+\renewcommand{\cftpartfont}{\Large\bfseries\color{black}}
+\renewcommand{\cftpartpagefont}{\Large\bfseries\color{black}}
+\renewcommand{\cftpartafterpnum}{\vskip 0.5em}
+
+% Chapter 目录样式
+\renewcommand{\cftchapfont}{\bfseries\color{black}}
+\renewcommand{\cftchappagefont}{\bfseries\color{black}}
+\renewcommand{\cftchapleader}{\cftdotfill{\cftchapdotsep}}
+\renewcommand{\cftchapdotsep}{2}
+\setlength{\cftchapnumwidth}{4.5em}  % 章节编号宽度
+
+% Section 目录样式（隐藏编号）
+\renewcommand{\cftsecfont}{\small\color{black}}
+\renewcommand{\cftsecpagefont}{\small\color{black}}
+\renewcommand{\cftsecleader}{\cftdotfill{\cftsecdotsep}}
+\renewcommand{\cftsecdotsep}{2}
+\renewcommand{\cftsecpresnum}{\begin{lrbox}{\@tempboxa}}
+\renewcommand{\cftsecaftersnum}{\end{lrbox}}
+
+% Subsection 目录样式（隐藏编号）
+\renewcommand{\cftsubsecfont}{\small\color{black}}
+\renewcommand{\cftsubsecpagefont}{\small\color{black}}
+\renewcommand{\cftsubsecleader}{\cftdotfill{\cftsubsecdotsep}}
+\renewcommand{\cftsubsecdotsep}{2}
+\renewcommand{\cftsubsecpresnum}{\begin{lrbox}{\@tempboxa}}
+\renewcommand{\cftsubsecaftersnum}{\end{lrbox}}
+
+% Subsubsection 目录样式（与 subsection 一致）
+\renewcommand{\cftsubsubsecfont}{\small\color{black}}
+\renewcommand{\cftsubsubsecpagefont}{\small\color{black}}
+\renewcommand{\cftsubsubsecleader}{\cftdotfill{\cftsubsubsecdotsep}}
+\renewcommand{\cftsubsubsecdotsep}{2}
+\renewcommand{\cftsubsubsecpresnum}{\begin{lrbox}{\@tempboxa}}
+\renewcommand{\cftsubsubsecaftersnum}{\end{lrbox}}
+\setlength{\cftsubsubsecindent}{\dimexpr\cftsubsecindent+\cftsubsecnumwidth\relax}
+\setlength{\cftsubsubsecnumwidth}{\cftsubsecnumwidth}
+\makeatletter
+\providecommand{\toclevel@manualsubsubsection}{2}
+\newcommand*{\l@manualsubsubsection}[2]{%
+  \vskip \cftbeforesubsubsecskip
+  {\leftskip \cftsubsubsecindent\relax
+   \rightskip \@tocrmarg
+   \parfillskip -\rightskip
+   \parindent \cftsubsubsecindent\relax\@afterindenttrue
+   \interlinepenalty\@M
+   \leavevmode
+   \@tempdima \cftsubsubsecnumwidth\relax
+   \let\@cftbsnum \cftsubsubsecpresnum
+   \let\@cftasnum \cftsubsubsecaftersnum
+   \let\@cftasnumb \cftsubsubsecaftersnumb
+   \advance\leftskip \@tempdima \null\nobreak\hskip -\leftskip
+   {\cftsubsubsecfont #1}\nobreak
+   \cftsubsubsecfillnum{#2}}%
+}
+\makeatother
+
+% 目录标题样式（居中、黑色、大号）
+\renewcommand{\cfttoctitlefont}{\hfill\Huge\bfseries\color{black}}
+\renewcommand{\cftaftertoctitle}{\hfill}
+% 目录标题后添加横线
+\renewcommand{\cftaftertoctitleskip}{3mm}
+\makeatletter
+\renewcommand{\@cftmaketoctitle}{%
+  \vspace*{2cm}
+  {\cfttoctitlefont\contentsname}{\cftaftertoctitle}\par
+  \vspace{\cftaftertoctitleskip}
+  {\color{black}\noindent\rule{\textwidth}{2pt}}\par
+  \vspace{7mm}
+}
+\makeatother
+
+% 设置 tocloft 的页面样式
+\tocloftpagestyle{plain}
+
+% 在文档开始后设置目录的第一页样式
+\AtBeginDocument{%
+  \let\oldtableofcontents\tableofcontents
+  \renewcommand{\tableofcontents}{%
+    \clearpage
+    \thispagestyle{plain}%
+    \pagestyle{plain}%
+    \oldtableofcontents
+  }
+}
+
+% -------------------------------
+% 标题格式（自定义）- 简洁风格
+% -------------------------------
+\makeatletter
+\let\@partguide\@empty
+\newcommand{\partguide}[1]{\gdef\@partguide{#1}}
+\newcommand{\guidepart}[2]{%
+  \partguide{#2}%
+  \part{#1}%
+}
+\newcommand{\poempart}[3]{%
+  \guidepart{\texorpdfstring{#1 \\ {\normalsize\textit{#2}}}{#1：#2}}{#3}%
+}
+
+% Part 标题重定义
+\renewcommand\part{%
+  \cleardoublepage
+  \thispagestyle{empty}%
+  \secdef\@part\@spart}
+
+% 重定义 @endpart，避免额外的空白页
+\def\@endpart{\vfil}
+
+\def\@part[#1]#2{%
+    \ifnum \c@secnumdepth >-2\relax
+      \refstepcounter{part}%
+      \addcontentsline{toc}{part}{\thepart\hspace{1em}#1}%
+    \else
+      \addcontentsline{toc}{part}{#1}%
+    \fi
+    \markboth{}{}%
+    \vspace*{3.5cm}
+    {\centering
+     \interlinepenalty \@M
+     \normalfont
+     \ifnum \c@secnumdepth >-2\relax
+       \Huge\bfseries\color{black}\thepart\par
+       \vspace{1.5em}
+       \Huge\bfseries\itshape\color{black}#2%
+     \else
+       \Huge\bfseries\itshape\color{black} #2%
+     \fi
+     \par}%
+    \ifx\@partguide\@empty\else
+      \vspace{3em}
+      {\centering
+       \parbox{0.78\textwidth}{%
+         \setstretch{1.18}\small\color{darkGray}\raggedright
+         \textbf{\ifdefined\ENGLISH Guide\else 导读\fi}\par
+         \vspace{0.7em}
+         \@partguide
+       }\par}%
+    \fi
+    \global\let\@partguide\@empty
+    \vspace{2.2cm}
+    \@endpart}
+
+\def\@spart#1{%
+    \vspace*{4.2cm}
+    {\centering
+     \interlinepenalty \@M
+     \normalfont
+     \Huge\bfseries\itshape\color{black} #1%
+     \par}%
+    \global\let\@partguide\@empty
+    \vspace{2.2cm}
+    \@endpart}
+
+% Chapter 标题重定义
+\renewcommand\chapter{%
+  \if@openright\cleardoublepage\else\clearpage\fi
+  \global\@topnum\z@
+  \@afterindentfalse
+  \secdef\@chapter\@schapter}
+
+\def\@chapter[#1]#2{%
+  \ifnum \c@secnumdepth >\m@ne
+    \refstepcounter{chapter}%
+    \typeout{\@chapapp\space\thechapter.}%
+    \addcontentsline{toc}{chapter}%
+      {\protect\numberline{\ifdefined\ENGLISH Chapter~\thechapter\else 第\zhnumber{\thechapter}章\fi}#1}%
+  \else
+    \addcontentsline{toc}{chapter}{#1}%
+  \fi
+  \chaptermark{#1}%
+  \thispagestyle{plain}%
+  \@makechapterhead{#2}%
+  \@afterheading}
+
+\def\@makechapterhead#1{%
+  \vspace*{30\p@}%
+  {\parindent \z@ \raggedright \normalfont
+    \ifnum \c@secnumdepth >\m@ne
+      \LARGE\bfseries\color{darkGray} \ifdefined\ENGLISH Chapter~\thechapter\else 第\zhnumber{\thechapter}章\fi\quad
+    \fi
+    \LARGE\bfseries\color{darkGray} #1\par\nobreak
+    \vskip 20\p@
+  }}
+
+\def\@schapter#1{%
+  \thispagestyle{plain}%
+  \global\@topnum\z@
+  \@afterindentfalse
+  \@makeschapterhead{#1}%
+  \@afterheading}
+
+\def\@makeschapterhead#1{%
+  \vspace*{30\p@}%
+  {\parindent \z@ \raggedright
+    \normalfont
+    \interlinepenalty\@M
+    \LARGE \bfseries\color{darkGray} #1\par\nobreak
+    \vskip 20\p@
+  }}
+
+% Section 和 Subsection 格式重定义
+\renewcommand\section{\@startsection{section}{1}{\z@}%
+  {-2.2ex \@plus -0.8ex \@minus -.2ex}%
+  {1.2ex \@plus.2ex}%
+  {\normalfont\Large\bfseries\color{darkGray}}}
+
+\renewcommand\subsection{\@startsection{subsection}{2}{\z@}%
+  {-2.0ex\@plus -0.6ex \@minus -.2ex}%
+  {0.6ex \@plus .1ex}%
+  {\normalfont\large\bfseries\color{darkGray}}}
+\makeatother
+
+% -------------------------------
+% 页眉页脚（fancyhdr）- 简洁风格
+% -------------------------------
+% 中文环境下普通空格可能被吃掉，这里用固定宽度空白保证页眉可见间距
+\ifdefined\ENGLISH
+  \renewcommand{\chaptermark}[1]{\markboth{Chapter~\thechapter\hspace{0.5em}#1}{Chapter~\thechapter\hspace{0.5em}#1}}
+\else
+  \renewcommand{\chaptermark}[1]{\markboth{第\zhnumber{\thechapter}章\hspace{0.5em}#1}{第\zhnumber{\thechapter}章\hspace{0.5em}#1}}
+\fi
+
+% 简洁页眉横线。正文样式显式启用，前置页样式显式禁用，
+% 避免部分 PDF 阅读器把 0pt 横线渲染成发丝线。
+\newcommand{\bookheadrule}{%
+  {\color{primaryBlue}\hrule width\headwidth height\headrulewidth \vskip-\headrulewidth}%
+}
+\renewcommand{\headrulewidth}{0.5pt}
+\renewcommand{\headrule}{\bookheadrule}
+
+% 页脚无横线
+\renewcommand{\footrulewidth}{0pt}
+
+% 主体页样式
+\fancypagestyle{mystyle}{
+    \fancyhf{}
+    \renewcommand{\headrulewidth}{0.5pt}
+    \renewcommand{\headrule}{\bookheadrule}
+    % 页眉：偶数页左为书名，奇数页右为章标题
+    \fancyhead[LE]{\small\color{darkGray}\mytitleheader}
+    \fancyhead[RO]{\small\color{darkGray}\nouppercase{\leftmark}}
+    % 页脚：页码
+    \fancyfoot[LE]{\thepage}
+    \fancyfoot[RO]{\thepage}
+}
+
+\newcommand{\usechapterplainstyle}{%
+    \fancypagestyle{plain}{%
+        \fancyhf{}
+        \renewcommand{\headrulewidth}{0pt}
+        \renewcommand{\headrule}{}
+        \fancyfoot[LE]{\thepage}
+        \fancyfoot[RO]{\thepage}
+    }%
+}
+
+\newcommand{\usefrontplainstyle}{%
+    \fancypagestyle{plain}{%
+        \fancyhf{}
+        \renewcommand{\headrulewidth}{0pt}
+        \renewcommand{\headrule}{}
+        \fancyfoot[LE]{\thepage}
+        \fancyfoot[RO]{\thepage}
+    }%
+}
+
+\fancypagestyle{frontstyle}{
+    \fancyhf{}
+    \renewcommand{\headrulewidth}{0pt}
+    \renewcommand{\headrule}{}
+    \fancyfoot[LE]{\thepage}
+    \fancyfoot[RO]{\thepage}
+}
+
+\usechapterplainstyle
+
+% -------------------------------
+% AI 共创水印（开关：main.tex 中 \def\aiwatermark{}）
+% -------------------------------
+\ifdefined\aiwatermark
+  \usepackage{eso-pic}
+  % 水印文案（可自定义）
+  \newcommand{\aiwatermarktext}{人机共创 · Human\,×\,AI}
+  \newcommand{\aiwatermarkfooter}{%
+    \fontsize{5.5}{5.5}\selectfont\color{black!22}%
+    本书由人类与AI共同创作%
+  }
+  % ── 方案 A：对角半透明底纹（每页中央） ──
+  \AddToShipoutPictureBG{%
+    \begin{tikzpicture}[remember picture,overlay]
+      \node[rotate=40,scale=2.5,opacity=0.04,text=primaryBlue]
+        at (current page.center) {\aiwatermarktext};
+    \end{tikzpicture}%
+  }
+  % ── 方案 B：页脚小字 ──
+  % 在所有含页码的页样式中追加水印脚注
+  \fancypagestyle{mystyle}{
+    \fancyhf{}
+    \renewcommand{\headrulewidth}{0.5pt}
+    \renewcommand{\headrule}{\bookheadrule}
+    \fancyhead[LE]{\small\color{darkGray}\mytitleheader}
+    \fancyhead[RO]{\small\color{darkGray}\nouppercase{\leftmark}}
+    \fancyfoot[LE]{\thepage}
+    \fancyfoot[RO]{\thepage}
+    \fancyfoot[C]{\aiwatermarkfooter}
+  }
+  \renewcommand{\usechapterplainstyle}{%
+    \fancypagestyle{plain}{%
+      \fancyhf{}
+      \renewcommand{\headrulewidth}{0pt}
+      \renewcommand{\headrule}{}
+      \fancyfoot[LE]{\thepage}
+      \fancyfoot[RO]{\thepage}
+      \fancyfoot[C]{\aiwatermarkfooter}
+    }%
+  }
+  \renewcommand{\usefrontplainstyle}{%
+    \fancypagestyle{plain}{%
+      \fancyhf{}
+      \renewcommand{\headrulewidth}{0pt}
+      \renewcommand{\headrule}{}
+      \fancyfoot[LE]{\thepage}
+      \fancyfoot[RO]{\thepage}
+      \fancyfoot[C]{\aiwatermarkfooter}
+    }%
+  }
+  \fancypagestyle{frontstyle}{
+    \fancyhf{}
+    \renewcommand{\headrulewidth}{0pt}
+    \renewcommand{\headrule}{}
+    \fancyfoot[LE]{\thepage}
+    \fancyfoot[RO]{\thepage}
+    \fancyfoot[C]{\aiwatermarkfooter}
+  }
+  \usechapterplainstyle
+\fi
+
+% -------------------------------
+% quote 区的字体（引用/引文）
+% -------------------------------
+\AtBeginEnvironment{quote}{\quotefont\small}
+
+% -------------------------------
+% 脚注：每页重新编号 + 楷体 + 上标标号
+% -------------------------------
+\zmakeperpage{footnote}
+\makeatletter
+\renewcommand{\@makefntext}[1]{%
+    \parindent 0pt%
+    \noindent
+    \hb@xt@0.6em{\hss\kaiti\@thefnmark.}%
+    \kaiti#1%
+}
+\makeatother
+
+\newcommand{\mycoverpage}{%
+    \thispagestyle{empty}%
+    \begin{tikzpicture}[remember picture,overlay]
+        \node[anchor=south west,inner sep=0pt] at (current page.south west) {%
+            \includegraphics[width=\paperwidth,height=\paperheight]{images/cover_c_parallel.png}%
+        };
+
+        \node[anchor=north west,inner sep=0pt] at
+            ([xshift=14mm,yshift=-15mm]current page.north west) {%
+            \parbox[t]{56mm}{%
+                \raggedright
+                \ifdefined\ENGLISH
+                    {\fontsize{39}{33}\selectfont\bfseries\color{white} The\\[-1.2mm]Fifth\\[-1.2mm]Dimension\par}
+                \else
+                    {\fontsize{44}{35}\selectfont\bfseries\color{white} \shortstack[l]{第五\\[-1.2mm]维度}\par}
+                \fi
+            }%
+        };
+
+        \node[anchor=north west,inner sep=0pt] at
+            ([xshift=12mm,yshift=-108mm]current page.north west) {%
+            \parbox[t]{128mm}{%
+                \raggedright
+                {\fontsize{20}{24.5}\selectfont\bfseries\color{black!82} \mytitlesub\par}
+
+                \vspace{4.2mm}
+
+                {\fontsize{12.2}{15}\selectfont\color{black!74} \myauthorzh 著\par}
+            }%
+        };
+
+        \node[anchor=north east,text=black!38,inner sep=0pt] at
+            ([xshift=-43mm,yshift=-37mm]current page.north east) {%
+            {\fontsize{12.2}{13.4}\selectfont\kaiti \shortstack[c]{于\\[0.7mm]远\\[0.7mm]峦\\[0.7mm]可\\[0.7mm]达}}
+        };
+
+        \node[anchor=north east,text=black!38,inner sep=0pt] at
+            ([xshift=-34mm,yshift=-30mm]current page.north east) {%
+            {\fontsize{12.2}{13.4}\selectfont\kaiti \shortstack[c]{于\\[0.7mm]微\\[0.7mm]零\\[0.7mm]可\\[0.7mm]察}}
+        };
+
+        \node[anchor=north east,text=black!38,inner sep=0pt] at
+            ([xshift=-25mm,yshift=-23mm]current page.north east) {%
+            {\fontsize{12.2}{13.4}\selectfont\kaiti \shortstack[c]{于\\[0.7mm]过\\[0.7mm]往\\[0.7mm]可\\[0.7mm]溯}}
+        };
+
+        \node[anchor=north east,text=black!42,inner sep=0pt] at
+            ([xshift=-16mm,yshift=-16mm]current page.north east) {%
+            {\fontsize{12.8}{14}\selectfont\kaiti \shortstack[c]{于\\[0.7mm]将\\[0.7mm]来\\[0.7mm]可\\[0.7mm]塑}}
+        };
+
+        \node[anchor=south,inner sep=0pt] at
+            ([yshift=11.5mm]current page.south) {%
+            \includegraphics[width=54mm]{images/phei-transparent.png}
+        };
+
+    \end{tikzpicture}
+    \null
+
+    \clearpage
+}
+
+
+% 扉页（简洁风格）
+\newcommand{\mytitlepage}{%
+    \thispagestyle{empty}%
+    \pagecolor{white}%
+    \color{black}%
+
+    \begin{tikzpicture}[remember picture,overlay]
+        \node[anchor=north west,inner sep=0pt] at
+            ([xshift=24mm,yshift=-52mm]current page.north west) {%
+            \parbox[t]{112mm}{%
+                \raggedright
+                \ifdefined\ENGLISH
+                    {\fontsize{38}{34}\selectfont\bfseries\color{black!92} \mytitlemain\par}
+                \else
+                    {\fontsize{41}{33}\selectfont\bfseries\color{black!92} \shortstack[l]{第五\\[-1.2mm]维度}\par}
+                \fi
+
+                \vspace{4.8mm}
+
+                {\fontsize{17}{19
+                }\selectfont\bfseries\color{black!74} \mytitlesub\par}
+
+                \vspace{4.8mm}
+
+                \ifdefined\ENGLISH
+                  {\fontsize{11.8}{15}\selectfont\color{black!70} \myauthorzh\par}
+                \else
+                  {\fontsize{11.8}{15}\selectfont\color{black!70} \myauthorzh 著\par}
+                \fi
+            }%
+        };
+
+        \node[anchor=south] at
+            ([yshift=11.5mm]current page.south) {%
+            \includegraphics[width=54mm]{images/phei-transparent.png}
+        };
+    \end{tikzpicture}
+    \null
+    
+    \clearpage
+    \nopagecolor  % 恢复正常背景色
+    \color{black} % 恢复黑色文字
+}
+
+\newcommand{\mytrimcropmarks}{%
+    \begin{tikzpicture}[remember picture,overlay]
+        \color{black!48}
+
+        \def\cornerLen{8mm}
+        \def\cornerOffset{4mm}
+        \def\crossLen{3.8mm}
+        \def\crossRadius{1.1mm}
+
+        \coordinate (topMark) at ([yshift=-5mm]current page.north);
+        \coordinate (bottomMark) at ([yshift=5mm]current page.south);
+        \coordinate (leftMark) at ([xshift=5mm]current page.west);
+        \coordinate (rightMark) at ([xshift=-5mm]current page.east);
+
+        \draw[line width=0.28pt]
+            ([xshift=0mm,yshift=-\cornerOffset]current page.north west) --
+            ([xshift=\cornerLen,yshift=-\cornerOffset]current page.north west);
+        \draw[line width=0.28pt]
+            ([xshift=\cornerOffset,yshift=0mm]current page.north west) --
+            ([xshift=\cornerOffset,yshift=-\cornerLen]current page.north west);
+
+        \draw[line width=0.28pt]
+            ([xshift=-\cornerLen,yshift=-\cornerOffset]current page.north east) --
+            ([xshift=0mm,yshift=-\cornerOffset]current page.north east);
+        \draw[line width=0.28pt]
+            ([xshift=-\cornerOffset,yshift=0mm]current page.north east) --
+            ([xshift=-\cornerOffset,yshift=-\cornerLen]current page.north east);
+
+        \draw[line width=0.28pt]
+            ([xshift=0mm,yshift=\cornerOffset]current page.south west) --
+            ([xshift=\cornerLen,yshift=\cornerOffset]current page.south west);
+        \draw[line width=0.28pt]
+            ([xshift=\cornerOffset,yshift=0mm]current page.south west) --
+            ([xshift=\cornerOffset,yshift=\cornerLen]current page.south west);
+
+        \draw[line width=0.28pt]
+            ([xshift=-\cornerLen,yshift=\cornerOffset]current page.south east) --
+            ([xshift=0mm,yshift=\cornerOffset]current page.south east);
+        \draw[line width=0.28pt]
+            ([xshift=-\cornerOffset,yshift=0mm]current page.south east) --
+            ([xshift=-\cornerOffset,yshift=\cornerLen]current page.south east);
+
+        \draw[line width=0.28pt]
+            ([xshift=-\crossLen]topMark) --
+            ([xshift=\crossLen]topMark);
+        \draw[line width=0.28pt]
+            ([yshift=-\crossLen]topMark) --
+            ([yshift=\crossLen]topMark);
+        \draw[line width=0.28pt] (topMark) circle (\crossRadius);
+
+        \draw[line width=0.28pt]
+            ([xshift=-\crossLen]bottomMark) --
+            ([xshift=\crossLen]bottomMark);
+        \draw[line width=0.28pt]
+            ([yshift=-\crossLen]bottomMark) --
+            ([yshift=\crossLen]bottomMark);
+        \draw[line width=0.28pt] (bottomMark) circle (\crossRadius);
+
+        \draw[line width=0.28pt]
+            ([xshift=-\crossLen]leftMark) --
+            ([xshift=\crossLen]leftMark);
+        \draw[line width=0.28pt]
+            ([yshift=-\crossLen]leftMark) --
+            ([yshift=\crossLen]leftMark);
+        \draw[line width=0.28pt] (leftMark) circle (\crossRadius);
+
+        \draw[line width=0.28pt]
+            ([xshift=-\crossLen]rightMark) --
+            ([xshift=\crossLen]rightMark);
+        \draw[line width=0.28pt]
+            ([yshift=-\crossLen]rightMark) --
+            ([yshift=\crossLen]rightMark);
+        \draw[line width=0.28pt] (rightMark) circle (\crossRadius);
+    \end{tikzpicture}%
+}
+
+\newlength{\bookpageboxwidth}
+\newlength{\bookpageleftmargin}
+\newcommand{\mycenteredpagebox}[2]{%
+    \par\noindent
+    \setlength{\bookpageboxwidth}{#1}%
+    \ifodd\value{page}%
+        \setlength{\bookpageleftmargin}{\pinner}%
+    \else
+        \setlength{\bookpageleftmargin}{\pouter}%
+    \fi
+    \hspace*{\dimexpr0.5\paperwidth-0.5\bookpageboxwidth-\bookpageleftmargin\relax}%
+    \parbox{\bookpageboxwidth}{#2}%
+    \par
+}
+
+\newcommand{\mybookinfopage}{%
+    \thispagestyle{empty}%
+    \color{black}%
+    \mytrimcropmarks
+
+    \vspace*{0mm}
+
+    \begin{center}
+        {\fontsize{9.8}{9.8}\selectfont\bfseries\color{black!72}\ifdefined\ENGLISH Synopsis\else 内容简介\fi\par}
+    \end{center}
+
+    \vspace{5.5mm}
+
+    \mycenteredpagebox{0.76\paperwidth}{%
+        \setstretch{1.12}\fontsize{8.2}{11.1}\selectfont\color{darkGray}\parindent=2em
+        \mybookblurb\par
+    }
+
+    \vspace{4.8mm}
+
+    \mycenteredpagebox{0.76\paperwidth}{%
+        \setstretch{1.06}\fontsize{7.6}{10.0}\selectfont\color{darkGray}
+        \mybookrights\par
+    }
+
+    \vspace{16mm}
+
+    \mycenteredpagebox{0.76\paperwidth}{%
+        {\fontsize{8.1}{10.2}\selectfont\bfseries\color{black!78}\mybookcipheading\par}
+        \vspace{0.2em}
+        {\setstretch{1.06}\fontsize{7.6}{10.0}\selectfont\color{darkGray}\mybookcipbody\par}
+    }
+
+    \vspace{5.0mm}
+
+    \mycenteredpagebox{0.76\paperwidth}{%
+        {\setstretch{1.06}\fontsize{7.6}{10.0}\selectfont\color{darkGray}\mybookpublicationinfo\par}
+    }
+
+    \vfill
+
+    \mycenteredpagebox{0.76\paperwidth}{%
+        \raggedright
+        \setstretch{1.03}\fontsize{6.6}{8.8}\selectfont\color{darkGray}
+        \mybookserviceinfo\par
+    }
+
+    \clearpage
+}
+
+\newcommand{\bookhighlightentry}[2]{%
+    \parbox{0.88\textwidth}{%
+        \setstretch{1.24}\small\color{darkGray}
+        #1\par
+        \vspace{0.7em}
+        {\raggedleft\footnotesize\color{black!56}——#2\par}
+    }%
+}
+
+\newcommand{\bookhookquestion}[1]{%
+    \parbox{0.84\textwidth}{%
+        \centering
+        \setstretch{1.18}\large\color{darkGray}#1\par
+    }%
+}
+
+\newcommand{\mybookhighlightpage}{%
+    \thispagestyle{empty}%
+    \color{black}%
+
+    \vspace*{6mm}
+
+    \begin{center}
+        \rule{24mm}{0.4pt}
+
+        \vspace{7mm}
+
+        {\small\bfseries\color{black!78}\mybookhooktitle\par}
+
+        \vspace{2.5mm}
+
+        {\footnotesize\color{black!56}\mybookhookintro\par}
+    \end{center}
+
+    \vspace{8mm}
+
+    \begin{center}
+        \mybookhookquestions
+    \end{center}
+
+    \vspace{7mm}
+
+    \begin{center}
+        \rule{24mm}{0.4pt}
+    \end{center}
+
+    \vspace{9mm}
+
+    \begin{center}
+        \mybookhighlights
+    \end{center}
+
+    \vfill
+
+    \begin{center}
+        \rule{24mm}{0.4pt}
+    \end{center}
+
+    \clearpage
+}
+% 引用框
+\newtcolorbox{myquote}{
+    enhanced,
+    breakable,
+    colback=paleGray,
+    colframe=primaryBlue,
+    boxrule=0pt,
+    leftrule=3pt,
+    arc=2pt,
+    fontupper={\kaiti\small},
+    top=10pt, bottom=10pt, left=12pt, right=12pt,
+    before skip=15pt, after skip=15pt
+}
+
+% 思考框（使用浅色变体）
+\newtcolorbox{importantbox}{
+    enhanced,
+    breakable,
+    colback=lightGray,
+    colframe=darkGray,
+    boxrule=0pt,
+    leftrule=3pt,
+    arc=2pt,
+    fontupper=\bfseries,
+    top=10pt, bottom=10pt, left=12pt, right=12pt,
+    before skip=15pt, after skip=15pt
+}
+
+% 重点框
+\ifdefined\ENGLISH \def\defaultthinkboxtitle{Reflection}\else \def\defaultthinkboxtitle{思考}\fi
+\newtcolorbox{thinkbox}[1][\defaultthinkboxtitle]{
+    enhanced,
+    breakable,
+    colback=primaryBlue!5,
+    colframe=primaryBlue,
+    colbacktitle=primaryBlue,
+    coltitle=white,
+    boxrule=1pt,
+    arc=2pt,
+    title={\textbf{#1}},
+    fonttitle=\bfseries,
+    top=8pt, bottom=8pt, left=10pt, right=10pt,
+    before skip=15pt, after skip=15pt
+}

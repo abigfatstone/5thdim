@@ -1,0 +1,66 @@
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[scale=0.68]
+  % --- Left heatmap: "他 从 树 上 摘 苹果" (6 tokens) ---
+  \ifdefined\ENGLISH
+    \def\wordsA{{"He","ate","the","ripe","red","apple"}}
+  \else
+    \def\wordsA{{"他","从","树","上","摘","苹果"}}
+  \fi
+
+  \node[font=\small\bfseries, text=darkGray] at (2.5, 1.2) {\ifdefined\ENGLISH He ate the ripe red apple\else 他从树上摘苹果\fi};
+  
+  \foreach \i in {0,...,5} {
+    \node[font=\scriptsize, anchor=east, text=darkGray] at (-0.3, -\i*0.7) {\pgfmathparse{\wordsA[\i]}\pgfmathresult};
+    \node[font=\scriptsize, anchor=south, rotate=45, text=darkGray] at (\i*0.7+0.35, 0.3) {\pgfmathparse{\wordsA[\i]}\pgfmathresult};
+  }
+  
+  % Draw grid
+  \foreach \i in {0,...,5} {
+    \foreach \j in {0,...,5} {
+      \draw[border] (\j*0.7, -\i*0.7-0.35) rectangle (\j*0.7+0.7, -\i*0.7+0.35);
+    }
+  }
+  
+  % Fill the "苹果" row (row 5) — fruit context: attend to 树, 上, 摘
+  \foreach \j/\w in {0/8, 1/10, 2/85, 3/70, 4/60, 5/15} {
+    \fill[darkCyan!\w] (\j*0.7, -5*0.7-0.35) rectangle (\j*0.7+0.7, -5*0.7+0.35);
+  }
+  
+  % Label
+  \node[font=\scriptsize, text=coolGray] at (2.1, -4.6) {$\uparrow$ \ifdefined\ENGLISH what \emph{apple} attends to\else 苹果关注的词\fi};
+
+  % --- Right heatmap ---
+  \begin{scope}[xshift=7.5cm]
+  \ifdefined\ENGLISH
+    \def\wordsB{{"He","got","a","new","Apple","phone"}}
+  \else
+    \def\wordsB{{"他","刚","买","了","苹果","手机"}}
+  \fi
+
+  \node[font=\small\bfseries, text=darkGray] at (2.5, 1.2) {\ifdefined\ENGLISH He got a new Apple phone\else 他刚买了苹果手机\fi};
+  
+  \foreach \i in {0,...,5} {
+    \node[font=\scriptsize, anchor=east, text=darkGray] at (-0.3, -\i*0.7) {\pgfmathparse{\wordsB[\i]}\pgfmathresult};
+    \node[font=\scriptsize, anchor=south, rotate=45, text=darkGray] at (\i*0.7+0.35, 0.3) {\pgfmathparse{\wordsB[\i]}\pgfmathresult};
+  }
+  
+  % Draw grid
+  \foreach \i in {0,...,5} {
+    \foreach \j in {0,...,5} {
+      \draw[border] (\j*0.7, -\i*0.7-0.35) rectangle (\j*0.7+0.7, -\i*0.7+0.35);
+    }
+  }
+  
+  % Fill the "苹果" row (row 4) — tech context: attend to 买, 手机
+  \foreach \j/\w in {0/5, 1/8, 2/55, 3/15, 4/20, 5/90} {
+    \fill[darkCyan!\w] (\j*0.7, -4*0.7-0.35) rectangle (\j*0.7+0.7, -4*0.7+0.35);
+  }
+  
+  % Label
+  \node[font=\scriptsize, text=coolGray] at (2.1, -4.6) {$\uparrow$ \ifdefined\ENGLISH what \emph{Apple} attends to\else 苹果关注的词\fi};
+  \end{scope}
+\end{tikzpicture}
+\caption[\ifdefined\ENGLISH Attention weight illustration\else 注意力权重示意\fi]{\ifdefined\ENGLISH Attention weight illustration: the same word ``apple'' attends to entirely different tokens depending on context. Left: attention concentrates on ``ate'', ``ripe'', ``red''---fruit semantics. Right: attention concentrates on ``got'' and ``phone''---tech semantics. Darker color = higher weight\else 注意力权重示意：同一个词苹果在不同的上下文中关注的对象完全不同。左图注意力集中在树、上、摘，苹果呈现水果语义；右图注意力集中在买和手机，苹果呈现科技语义。颜色越深，注意力权重越大\fi}
+\label{fig:attention-context}
+\end{figure}

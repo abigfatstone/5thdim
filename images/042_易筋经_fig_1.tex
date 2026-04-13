@@ -1,0 +1,40 @@
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[
+  label/.style={font=\small\bfseries, anchor=north west},
+  item/.style={font=\small, anchor=north west}
+]
+
+% X层 - 内容少,高度小
+\node[rectangle, rounded corners=6pt, minimum width=11cm, minimum height=1.8cm, 
+      draw=border, line width=0.8pt, fill=paleGray] (X) at (-0.5, 5) {};
+\node[label] at (-5.5, 5.8) {$X$ \ifdefined\ENGLISH Layer: Public Knowledge\else 层：公开知识\fi};
+\node[item] at (-5.5, 5.3) {\ifdefined\ENGLISH Available to all; no differentiation\else 人人可得,不构成差异\fi};
+\node[item] at (-5.5, 4.8) {\ifdefined\ENGLISH • Public portion of training data: books, courses, internet, etc.\else • 训练数据的公开部分：书、课程、互联网等\fi};
+
+% C层 - 内容多,高度大
+\node[rectangle, rounded corners=6pt, minimum width=11cm, minimum height=2.8cm, 
+      draw=border, line width=0.8pt, fill=lightGray] (C) at (-0.5, 2.2) {};
+\node[label] at (-5.5, 3.4) {$C$ \ifdefined\ENGLISH Layer: Private Context\else 层：私有上下文\fi};
+\node[item] at (-5.5, 2.9) {\ifdefined\ENGLISH Here and now, ours alone\else 此时此地,只有我们自己拥有\fi};
+\node[item, text width=10cm] at (-5.5, 2.4) {\ifdefined\ENGLISH • Private training data: unique experiences, upper bounds seen, failure samples, etc.\else • 训练数据的私有部分：独特经历、见过的上限、失败样本等\fi};
+\node[item, text width=10cm] at (-5.5, 1.9) {\ifdefined\ENGLISH • Cognitive architecture: mental toolbox, inductive biases, methodology, etc.\else • 认知架构：心智工具箱、归纳偏置、方法论等\fi};
+\node[item, text width=10cm] at (-5.5, 1.4) {\ifdefined\ENGLISH • Self-awareness: constraints, energy sources, feasible domain, etc.\else • 自我认知：约束条件、能量来源、可行域等\fi};
+
+% T层 - 内容多,高度大
+\node[rectangle, rounded corners=6pt, minimum width=11cm, minimum height=2.8cm, 
+      draw=border, line width=0.8pt, fill=coolGray] (T) at (-0.5, -1.2) {};
+\node[label] at (-5.5, 0) {$T$ \ifdefined\ENGLISH Layer: Taste\else 层：品味\fi};
+\node[item] at (-5.5, -0.5) {\ifdefined\ENGLISH Our private reward model\else 我们的私有奖励模型\fi};
+\node[item, text width=10cm] at (-5.5, -1.0) {\ifdefined\ENGLISH • Reward model: resolution of good vs.\ bad---can you tell 80 from 95?\else • 奖励模型：对好坏的分辨率——能否区分80分和95分\fi};
+\node[item, text width=10cm] at (-5.5, -1.5) {\ifdefined\ENGLISH • Objective function: values---what exactly are we optimizing?\else • 目标函数：价值观——我们到底在优化什么\fi};
+\node[item, text width=10cm] at (-5.5, -2.0) {\ifdefined\ENGLISH • Benchmarks: private benchmarks, pruning rules, etc.\else • 评测基准：私人benchmark、剪枝规则等\fi};
+
+% 箭头
+\draw[-{Stealth[length=3mm]}, line width=1.2pt, darkGray] (X.south) -- (C.north) node[midway, right, font=\small] {+$C$};
+\draw[-{Stealth[length=3mm]}, line width=1.2pt, darkGray] (C.south) -- (T.north) node[midway, right, font=\small] {+$T$};
+
+\end{tikzpicture}
+\caption[\ifdefined\ENGLISH Three-layer structure of the information inequality\else 信息不等式的三层结构\fi]{\ifdefined\ENGLISH Three-layer structure of the information inequality\else 信息不等式的三层结构\fi}
+\label{fig:info-inequality}
+\end{figure}

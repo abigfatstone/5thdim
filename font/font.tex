@@ -1,0 +1,84 @@
+\ifdefined\uploadfont
+    % 使用上传字体方案（需要在 font/ 目录下放好对应文件）
+    \usepackage{xeCJK}
+    \usepackage{zhnumber}
+
+    % =====================================================
+    % 切换字体：取消注释其中一个方案，其余保持注释
+    % =====================================================
+
+    % 方案B: 霞鹜新致宋（开源，古典明朝风格）
+    \def\cjkMainFont{LXGWNeoZhiSong.ttf}
+    \def\cjkBoldFont{SourceHanSerifCN-SemiBold.otf}
+
+    % % 方案C: 宋体-简（macOS 自带，多字重完整）
+    % \def\cjkSysFont{}           % 系统字体标记，告知下方用名称而非路径加载
+    % \def\cjkMainFont{Songti SC Light}
+    % \def\cjkBoldFont{Songti SC Bold}
+
+    % =====================================================
+    \def\cjkMonoFont{FandolKai-Regular.otf}
+    \def\latinMainFont{EBGaramond.ttf}
+    \def\latinItalicFont{EBGaramond.ttf}
+
+    % 覆盖 xeCJK 默认 Script=CJK（Fandol 字体用 script=hani）
+    \defaultCJKfontfeatures{RawFeature={script=hani}}
+
+    % 缺字自动回退（用于 \kaiti 等字体缺少罕见字形时兜底）
+    \xeCJKsetup{AutoFallBack = true}
+
+    % 主中文字体（系统字体按名称加载；文件字体按路径加载）
+    \ifdefined\cjkSysFont
+        \setCJKmainfont[
+            BoldFont = \cjkBoldFont,
+            BoldItalicFont = \cjkBoldFont
+        ]{\cjkMainFont}
+    \else
+        \setCJKmainfont[
+            Path = font/,
+            UprightFont = *,
+            ItalicFont = *,
+            BoldFont = \cjkBoldFont,
+            BoldItalicFont = \cjkBoldFont
+        ]{\cjkMainFont}
+    \fi
+
+    % 英文字体
+    \setmainfont[
+        Path = font/,
+        UprightFont = *,
+        ItalicFont = *,
+        BoldFont = *,
+        BoldItalicFont = *,
+        AutoFakeSlant = 0.2,
+        BoldFeatures     = {RawFeature = {+wght=700}},
+        BoldItalicFeatures = {RawFeature = {+wght=700}}
+    ]{\latinMainFont}
+
+    % 楷体（FandolKai，GPLv3 + Font Exception；只有 Regular，伪造粗/斜）
+    \newCJKfontfamily\kaiti[
+        Path = font/,
+        RawFeature = {script=hani},
+        AutoFakeBold  = 2,
+        ItalicFont = *,
+        BoldFont = *,
+        BoldItalicFont = *
+    ]{\cjkMonoFont}
+
+    % 等宽字体
+    \setCJKmonofont[
+        Path = font/,
+        AutoFakeBold  = 2,
+        UprightFont = *,
+        BoldFont = *,
+        ItalicFont = *,
+        BoldItalicFont = *
+    ]{\cjkMonoFont}
+
+\else
+    % 默认使用 ctex 提供的中文字体配置
+    \usepackage{ctex}
+\fi
+
+% 引用环境字体
+\newcommand{\quotefont}{\kaiti}

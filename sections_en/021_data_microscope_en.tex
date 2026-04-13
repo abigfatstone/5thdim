@@ -1,0 +1,705 @@
+\poempart{Discerning the Infinitesimal}{The Price of the All-Seeing Eye}{
+
+This part focuses on "The Granularity of Truth" and "The Celestial Codex." They answer, respectively, how data is laid bare under the gaze of the all-seeing eye, and how it hides itself. Why data is both map and power, and how---given that data is a person's core asset---we can make data usable yet invisible.
+
+\vspace{1em}
+
+This part is at once light-hearted and mind-bending. It is packed with fascinating data analysis cases that teach you how to dress data in camouflage, and it takes you on a detective's journey to extract traces of information from a WeChat screenshot that has been stripped of nearly all identifying details. At the same time, concepts such as oblivious transfer and other cryptographic ideas are explained in plain language, along with the new paradigm of property rights brought about by \textbf{data flow} enabled by privacy-preserving computation.
+}
+
+\chapter{The Granularity of Truth---Maps, Microscopes, and Camouflage}
+
+
+\begin{myquote}If you torture the data long enough, it will confess to anything.\end{myquote}
+
+
+\section{The 1:1 Map and Selective Blindness}
+
+Borges once wrote an extremely short story:
+
+\ldots In that Empire, the Art of Cartography had attained such Perfection
+
+that the map of a single Province occupied an entire City,
+
+and the map of the Empire, an entire Province.
+
+\vspace{1em}
+
+In time, these Outsized Maps no longer satisfied,
+
+and the Colleges of Cartographers drew a Map of the Empire that was the size of the Empire, coinciding point for point with it.
+
+Later Generations, less devoted to the Study of Cartography, judged this Map to be useless and let it rot in the deserts.
+
+\vspace{1em}
+
+A map as large as the empire itself cannot be folded, cannot be carried, cannot be read.
+
+It is not a map---it is a replica of the empire.
+
+The value of a map lies precisely in the fact that it is not the territory.
+
+Its value comes from omission: stripping away irrelevant details, highlighting what matters.
+
+\vspace{1em}
+
+We pursue perfect information, but perfect information is unusable information.
+
+We need compression, abstraction, ``selective blindness.''
+
+\vspace{1em}
+
+\textbf{The question is: who does the selecting?}
+
+\newpage
+\subsection{The Art of Calling a Deer a Horse}
+
+In 207 BC, Zhao Gao led a deer into the imperial court.
+
+``Your Majesty, your servant presents a fine horse.''
+
+Qin Er Shi laughed: ``Surely the Chancellor is mistaken? This is clearly a deer.''
+
+\vspace{1em}
+
+Zhao Gao did not laugh.
+
+He surveyed the assembled ministers: ``What do you all think?''
+
+Some said it was a deer. Some stayed silent. Some said it was a horse.
+
+A few days later, those who had said it was a deer were dead.
+
+This story is usually read as a parable of power: Zhao Gao was testing who was loyal to him.
+
+\vspace{1em}
+
+But it has another layer of meaning:
+
+\textbf{Whoever can define what something is, holds the power.}
+
+Zhao Gao was not lying.
+
+He was declaring: from this day forward, the definition of ``deer'' is mine to decide.
+
+\vspace{1em}
+
+Two thousand years later, we entered the age of data.
+
+Data is the new deer.
+
+\begin{thinkbox}[Reflection]
+Who gets to decide what it is?
+
+How is the decision made?
+\end{thinkbox}
+
+
+\newpage
+\subsection{The Tyranny of the Average}
+
+In the 1950s, the U.S. Air Force noticed a spike in pilot accidents and suspected the cockpit design was at fault.
+So they measured ten body dimensions---height, arm span, leg length, sitting height, and so on---across more than 4,000 pilots, then used the averages to design a cockpit for the ``average pilot.''
+
+It sounded scientific, even reasonable.
+
+\vspace{1em}
+
+The problem was: this ``average pilot'' did not exist.
+The number of people who fell near the average on all ten dimensions was virtually zero. The cockpit had not been designed for a real person; it had been designed for a statistical phantom.
+\textbf{The average is mathematics' version of the ``deer.''}
+We assume it describes the typical person, when in fact it describes a person who does not exist.
+
+\vspace{1em}
+
+The allure of the average is that it makes things easier to manage. Details mean differences; differences mean exceptions; exceptions mean every decision must be reconsidered. The average erases all that trouble, compressing complex populations into a single number that can be slotted into spreadsheets, compared, and ranked.
+
+\vspace{1em}
+
+The cost is equally obvious: the easier something is to manage, the harder it is to see clearly.
+The too-tall, the too-short, the too-young, the too-old\ldots in the world of averages, they are all lumped together as ``deviations.'' We record only how far they are from ``normal,'' and stop describing who they actually are.
+And so people are forced to adapt to a world designed for the average person, rather than the world adapting to real people.
+
+\vspace{1em}
+Plato said there exists an ideal Horse in the realm of Forms, and every real horse is merely its imperfect shadow.
+
+Statisticians say there exists an average person, and every real person is merely a deviation from it.
+
+Both claims are equally absurd.
+
+The difference is that Plato knew he was speaking in metaphor, while many statisticians have forgotten.
+
+For a long time, we had no alternative.
+
+\vspace{1em}
+
+Not because we did not want to see the details, but because we could not.
+
+If we tried to break a national sales report down by every region and every time period, the data would explode. Storage costs, computing costs, labor costs\ldots all astronomical.
+
+The average was not the optimal solution; it was often the most realistic feasible solution at the time.
+
+It was the compromise of an era impoverished in computing power.
+
+\newpage
+\section{Truth, No Longer Lost in Translation}
+
+Now, computing power is sufficient.
+
+Storage is cheap, computation is fast, and oceans of data are no longer a luxury.
+
+But the real revolution is not here.
+
+\begin{importantbox}
+    \textbf{The real revolution is this: the middleman has vanished.}
+\end{importantbox}
+
+\vspace{1em}
+
+Imagine this scenario:
+
+A sales director wants to check recent performance.
+
+He opens the data dashboard. The dashboard shows: growth is steady, everything normal.
+
+He breathes a sigh of relief, closes his laptop, and heads to a meeting.
+
+\vspace{1em}
+
+But what he does not know is that beneath the calm surface, fierce currents are churning:
+
+Region A's performance has surged 30\%, because the store manager there made one critical decision right;
+
+Region B's performance has plunged 25\%, because a competitor just launched a price war there.
+
+\vspace{1em}
+
+One surge, one plunge---they cancel each other out perfectly.
+
+The totals look placid, as if nothing has happened.
+
+Why didn't he see any of this?
+
+Not because the data did not exist, but because the cost of asking questions was too high.
+
+\vspace{1em}
+
+In the past, a thick wall stood between business leaders and their data, and behind that wall sat a group of people called data analysts.
+It was like walking into a foreign restaurant where the menu is written in indecipherable symbols. We had to order through a ``translator.''
+
+\vspace{1em}
+
+Want to know ``what exactly is different between Region A and Region B''? We could not ask the data directly. We had to fill out a request form and send it to the ``translator'' behind the wall.
+
+The translator was busy; our request had to wait in line.
+
+The translator did not understand the business; he did not know why we cared about Region A and Region B.
+
+All he could do was follow the literal request, run a set of queries, and draw a chart.
+
+Two weeks later, the chart was ready. By then, the battle in Region B was already lost.
+
+Worse still, the ``translator,'' in order to keep the report tidy, would smooth out fluctuations that seemed unimportant---\textbf{what he assumed was noise might have been, for us, a signal of the utmost importance.}
+
+\vspace{1em}
+
+What we received was a pre-chewed version of ``reality.''
+
+As long as there is a person standing between us and the truth, what we hear will always be secondhand.
+
+It is like the game of telephone: by the time the message reaches us, it is not only delayed but distorted.
+
+\vspace{1em}
+
+AI changed all of this.
+
+It tore down the wall and eliminated the ``translator.''
+
+Now a sales director can ask the system directly in natural language:
+
+``Break down last month's performance for me---were there any regions that behaved abnormally?''
+
+No forms, no queues, no need to read anyone's mood.
+
+Three seconds later, he sees Region A's surge and Region B's plunge.
+
+\vspace{1em}
+
+\textbf{For the first time, he has the chance to see the deer with his own eyes,} rather than hearing someone relay that there seemed to be a horse over there.
+This is not about saving a few salaries or shaving two weeks off the wait.
+
+\vspace{1em}
+
+This is a transfer of definitional power.
+
+Before, the people who processed data decided what we could see.
+
+Now, we decide for ourselves what to look at.
+
+As long as we are curious, we can aim the microscope at any corner, at any time.
+
+When the cost of asking a question approaches zero, curiosity is no longer a luxury.
+
+We can finally ask the questions we never had the chance---or the nerve---to ask before.
+
+\begin{importantbox}
+And the details unearthed by that single question are often the dividing line between profit and loss.
+\end{importantbox}
+
+
+\newpage
+\section{Data in Camouflage: A High Cure Rate Does Not Make a Healer}
+Don't celebrate just yet.
+
+AI has indeed torn down the wall, placing us directly on the open plain of data.
+
+We can finally see the deer with our own eyes.
+
+But Zhao Gao can still smile and tell us it is a horse.
+
+And this time, he will prove it with mathematical formulas.
+
+\vspace{1em}
+
+Suppose we fall ill and need a doctor. We ask AI: ``Between Dr.\ Zhang and Dr.\ Li, who is the better physician?''
+
+AI pulls up the real clinical records of both doctors over the past year:
+
+Dr.\ Li: treated 1,000 patients, cure rate 99\%;
+
+Dr.\ Zhang: treated 1,000 patients, cure rate 70\%.
+
+\vspace{1em}
+
+The data looks ironclad: Dr.\ Li is a miracle worker, Dr.\ Zhang is a quack.
+
+Based on this number alone, we might even consider reporting Dr.\ Zhang for malpractice.
+
+But we have made a fatal error.
+
+\vspace{1em}
+
+If we are willing to step inside the clinic and take a look, we will discover:
+
+Dr.\ Li is relatively junior; the triage desk typically assigns him patients with milder conditions;
+
+Dr.\ Zhang is the department's chief specialist; the patients other doctors dare not take on are all sent to him.
+
+Now look at that 70\% again. That is not a low cure rate---that is a miracle.
+
+And Dr.\ Li's 99\% is merely common sense.
+
+\vspace{1em}
+
+In the age of AI, computing is no longer scarce. What is scarce is \textbf{the wisdom of definition.}
+
+When a conclusion appears before us, we must recognize: the dish may contain no gutter oil (fabricated data), but the ingredients may have been sliced beyond recognition during cooking---denominators can be optimized, time windows can be edited, and correlation can masquerade as causation.
+
+\vspace{1em}
+
+AI has already placed the microscope in our hands. We must learn how to focus it.
+
+Next, we will dismantle data's camouflage, piece by piece---not to learn the art of deception, but because only by seeing through these tricks can we, when Zhao Gao points at a deer and calls it a horse, stand firm and recognize it for what it is: a deer.
+
+\newpage
+\subsection{Spatial Camouflage: How the Unemployment Rate Got Lowered}
+
+The meaning of a fraction depends on how the numerator and denominator are defined.
+
+\textbf{Change the definition, and the deer becomes a horse.}
+
+\vspace{1em}
+
+How can the unemployment rate be defined?
+Its denominator can be all people who want to work, or it can be people who have actively looked for work in the past four weeks. When the economy is so dismal that people give up looking altogether, they are removed from the denominator (the total labor force).
+
+And so the despairing are no longer counted as part of the labor force, the denominator shrinks, and the unemployment rate actually \textbf{falls}---this is like lowering a hospital's mortality rate by turning patients away at the door.
+
+\vspace{1em}
+
+In his later philosophy, Wittgenstein said something that gives philosophers headaches: ``The meaning of a word is its use in the language.'' The unemployment rate works the same way---it has no true definition, only the definition that happens to be in use.
+
+\vspace{1em}
+
+The choice of denominator is everywhere.
+
+Conclusions may each be internally valid, yet tell completely different stories.
+
+\vspace{1em}
+
+How do we measure the safety of a mode of transport?
+If we use total miles traveled as the denominator, then airplanes are unquestionably the safest mode of transport in the world. But if we switch to takeoffs and landings or single trips as the denominator, the risk figures for air travel shoot up instantly.
+
+What is a company's customer satisfaction rate? If we only survey customers who are willing to fill out the questionnaire, satisfaction will always be high---because the angry customers have already left and will never fill it out\footnote{In statistics, there is a bias called survivorship bias: exclude the dead from the denominator, and the battlefield naturally looks safe.}.
+
+What is a product's market share? Looked at across \textbf{all categories}, it might be a mere 1\%, negligible. But if we define the denominator as the premium market among high-net-worth individuals over 30 in eastern China, its share instantly becomes 80\%. As long as the denominator is sliced finely enough, any startup can claim to be the industry leader. This is called being king of the fishbowl.
+
+\vspace{1em}
+
+
+When you see a number, ask first: what is the denominator?
+
+The person who chooses the denominator is the person who decides whether it is a deer or a horse.
+
+
+\subsection{Temporal Camouflage: Change the Starting Point, Change the Conclusion}
+
+If the denominator is a spatial cut, then the time window is a temporal pair of scissors.
+
+\textbf{Choose the right start and end points, and any story can be reversed.}
+
+\vspace{1em}
+
+Around 2013, climate change skeptics found a powerful argument:
+
+``Global temperatures haven't risen significantly since 1998!''
+
+This was true---if you chose 1998 as the starting point.
+
+Because 1998 was a super El Ni\~no year, with abnormally high temperatures.
+
+Draw a line starting from a peak, and of course everything after it looks flat.
+
+If you choose 1997 or 1999 as the starting point, the upward trend immediately reappears.
+
+The skeptics were not lying; they had simply picked their scissors with great care.
+
+\vspace{1em}
+
+The same trick is even more subtle in the business world.
+
+Suppose we are the marketing manager for a fund. The fund's five-year performance is:
+
+Year one: a 30\% plunge. The next four years: gains of 50\%, 20\%, 15\%, and 10\%.
+
+Starting from year one, the five-year cumulative return is about 59\%, an annualized return of less than 10\%---nothing special.
+But what if we start from year two? The four-year cumulative return exceeds 120\%!
+
+Same fund, different starting point, entirely different conclusion.
+
+\vspace{1em}
+
+Historians know this art well.
+
+Take Napoleon: begin his story at the Siege of Toulon, and he is a genius;
+
+begin it at Waterloo, and he is a gambler.
+
+Take any company: start the narrative from the garage, and it is a legend;
+
+start from the layoff scandal, and it is a bloodthirsty machine of capital.
+
+\textbf{The starting point of the narrative determines the narrative's conclusion.}
+
+The time window is the most covert of all deceptions.
+
+\begin{importantbox}
+No one will tell us why this particular starting point was chosen, but the choice itself is a stance.
+\end{importantbox}
+
+\subsection{Causal Camouflage: How Waking Up Early Became the Secret to Success}
+
+Psychologists have found that successful people overwhelmingly tend to rise early.
+
+And so early rising became a creed of the modern success gospel. Countless people desperate to change their fate force themselves out of bed at five in the morning, convinced this is the ladder to financial freedom.
+
+\vspace{1em}
+
+This is very likely a tragic misunderstanding.
+
+It is not that early rising made them successful---it is that ``success'' allowed them to rise early.
+
+When a person is financially free, in command of their own career, and excited about each new day, they naturally wake without an alarm---for them, rising early is simply an extension of enjoying life. For someone mired in soul-crushing work, forcing themselves up at five means only a longer stretch of misery and even lower productivity.
+
+\vspace{1em}
+
+\textbf{The alarm clock does not produce meaning; it is meaning that produces the alarm clock.}
+
+We are obsessed with appearances because appearances are controllable. Changing one's fate is hard; changing one's origins is hard; even changing one's luck is impossible. But ``setting an alarm'' is easy.
+We mimic the motions of the successful (early rising, meditation, minimalism), the way primitive tribes built straw huts in the shape of airplanes (cargo cults), believing this would summon wealth.
+
+This is a psychological placebo. By imitating the result, we delude ourselves into thinking we have mastered the cause.
+
+\vspace{1em}
+
+The same game of imitation misleads corporate decisions as well:
+Data shows that highly active users have higher conversion rates, so teams frantically push pop-ups, notifications, and check-in rewards to inflate daily active users (DAU).
+
+\vspace{1em}
+
+\textbf{But this is futile.}
+
+Because users love the product (the root cause), they are both active and willing to pay.
+Activity and payment are both byproducts of ``love,'' the core cause.
+Forcibly ``harassing'' users who do not love the product into becoming active will not make them pay---it will only turn them into angry active users.
+
+\vspace{1em}
+
+When we see A and B appearing together, the trap is to assume that achieving A will deliver B.
+
+Most of the time, A is merely an outer garment of B.
+
+\textbf{Putting on Einstein's jacket will not teach us the theory of relativity.}
+
+
+\newpage
+\subsection{Chart Camouflage: How Declining Births Can Be Disguised as a Rising Trend}
+
+The chart is the most elegant of all camouflage, because it makes us feel we have seen the data with our own eyes.
+
+The laziest yet most effective trick is manipulating the axes.
+
+\vspace{1em}
+
+As shown in Figure~\ref{fig:birth-camouflage}, the data on nationwide births from 2016 to 2025 published by the National Bureau of Statistics\footnote{The 2020 figure uses data from the Seventh National Population Census; a National Bureau of Statistics briefing from January 2025 states that ``in 2024, the national number of births was 9.54 million, an increase of 520,000 over 2023,'' from which we can infer approximately 9.02 million births in 2023; the 2025 figure of 7.92 million births comes from the \textit{Statistical Communiqu\'e on National Economic and Social Development 2025} published by the National Bureau of Statistics; figures for the remaining years come from data released annually by the National Bureau of Statistics.}.
+The data itself has not been fabricated; only one thing has been tampered with: \textbf{the} \textit{Y}\textbf{-axis has been flipped, with 0 placed at the top.}
+
+\input{images/021_births_reversed_axis}
+
+The real data clearly falls from a high point all the way down, but because the axis has been inverted, the line appears to be climbing steadily upward.
+If a reader only glances at it, they can easily come away with a completely opposite impression: \textbf{births seem to still be growing.}
+
+There is an even more sophisticated technique: selective display.
+What we see is our user growth curve; what we do not see is the industry's average growth curve.
+If the industry has grown 200\% while we have grown only 50\%, then that handsome growth curve is actually a curve of relative decline.
+
+\begin{importantbox}
+Charts, like words, can also be dressed in camouflage---but no one draws the frame of reference for us to see.
+\end{importantbox}
+
+\newpage
+\section{Whom the Microscope Is Aimed At}
+Everything we have discussed so far is technique: denominators, time windows, the magic of charts.
+
+Now let us ask a different question: who is placed under the high-powered microscope?
+
+And who is allowed to remain in the comfortable blur of low resolution?
+
+\vspace{1em}
+
+Between users and platforms, resolution is not symmetric.
+
+\textbf{For users, the platform uses high resolution.} Every click, every pause, every hesitation is recorded with millisecond precision. Linger three extra seconds on a product page, and the algorithm knows we are tempted. We do not even need to buy anything---the gaze itself is a resource being mined.
+
+\vspace{1em}
+
+\textbf{For the platform, the outside world uses low resolution.} The algorithm is a trade secret; the user agreement is a fifty-page legal document no one reads. Everything that happens after we click ``agree'' is locked inside a black box. We hand over all our data, yet have no idea how it computes with that data or how it defines us.
+
+\vspace{1em}
+
+Users are forced to become transparent, while platforms retain the right to invisibility.
+
+The resolution at which we are observed determines our position within the system.
+
+Once, surveillance was expensive; only a select few would be closely watched.
+
+Today, data is generated automatically, and the cost of storage approaches zero.
+
+But ``seeing'' remains one-directional: the platform sees the user, the user cannot see the algorithm;
+
+managers can see how often an employee presses a key, but employees cannot see the true formula behind their performance reviews.
+
+\vspace{1em}
+
+The core of Bentham's panopticon was not that prisoners were seen,
+
+but that prisoners never knew when they were being seen.
+
+In the Fifth Dimension, this design has been iterated to completion.
+
+We do not even know \textit{which of our attributes} are being collected and classified,
+
+nor what consequences that classification will bring---
+
+a higher insurance quote? A lower credit limit? Or certain information we will never be shown?
+
+\vspace{1em}
+
+Whoever can define whom, holds the power.
+
+And the asymmetry of power is often hidden in the asymmetry of who sees clearly and who remains a blur.
+
+\newpage
+\section{High Resolution from Low Pixels}
+
+This kind of gaze does not require a sophisticated system. Let us try, as an algorithm would with Figure~\ref{fig:wechatInfo}, to perform a high-resolution scan. This low-pixel WeChat screenshot is enough to leak a wealth of high-resolution information:
+
+ \begin{figure}[H]
+     \centering
+     \includegraphics[width=0.60\textwidth]{images/wechatInfo.jpg}
+     \caption[High-resolution clues in a low-pixel screenshot]{A low-pixel WeChat screenshot still yields a wealth of environmental and device clues}
+     \label{fig:wechatInfo}
+ \end{figure}
+
+This is an iPhone; the screenshot was taken at 11:12 AM;
+
+the battery icon is green, with a lightning bolt beside it---the phone is charging;
+
+it is connected to WiFi, not cellular---the phone is most likely at a fixed location, not on the move;
+
+if at a fixed location, most likely not at a desk, otherwise the screenshot would more likely have been taken from a computer;
+
+the group chat's notifications have been muted---the owner does not usually follow this group closely;
+
+only one SIM card is active (the phone may be dual-SIM capable);
+
+from the screen's aspect ratio we can only determine it is an iPhone model after the 6s;
+
+examining the character spacing, the font size is set to the smallest option (the default is the second-smallest);
+
+the background is dark, yet it is 11 AM---dark mode was manually selected;
+
+the battery percentage is displayed on the battery icon, indicating the operating system is iOS 16\footnote{The screenshot was taken on September 15, 2022; iOS 16 was released on September 12, and very few people had updated to it by that date.}.
+
+\vspace{1em}
+
+\textbf{None of this information was hidden.}
+
+It was all right there, in every pixel of the status bar, in every detail of the UI design.
+
+We thought we were simply sharing a chat log, but in reality we had bundled and uploaded our daily routine, our spending power (phone model), our personality traits (mute settings), and our eye-care habits (font size).
+Merely by scanning a few hundred pixels with the naked eye, one can roughly sketch the contours of our life.
+
+\vspace{1em}
+
+Now, imagine this:
+
+What if the observer is not a person, but an AI capable of billions of computations per second?
+
+What if the microscope is magnified another thousandfold?
+
+What if what it observes is not a static screenshot, but our very nerve endings?
+
+\vspace{1em}
+
+The data analyst of the past was like an accountant, tallying our spending;
+
+the data analyst of today is like a neurologist, reading our pulse directly through digital projections.
+
+\vspace{1em}
+
+This sounds terrifying---and it is terrifying---but it can also be benevolent.
+
+If an algorithm could alert us before a manic episode,
+
+notify our doctor before depression deepens,
+
+issue a warning before we make an impulsive decision\ldots
+
+Wouldn't that be a good thing?
+
+\vspace{1em}
+
+The problem is not the technology itself. The problem is:
+
+Who possesses this resolution? Who can see our micro-tremors?
+
+Will they use it to help us, or to manipulate us?
+
+For now, remember this:
+\begin{importantbox}
+The higher the resolution, the greater the power,
+
+and power must be constrained.
+\end{importantbox}
+
+\newpage
+\section{A Mirror That Reflects Back, Data That Programs}
+
+We always say we use data to record the world, but data is not merely a mirror---it is a mirror that reflects back, bending light and thereby altering the course of reality.
+
+In 1975, British economist Charles Goodhart proposed a law:
+
+\begin{myquote}
+When a measure becomes a target, it ceases to be a good measure.
+\end{myquote}
+
+The destructive power of this statement has been confirmed again and again over the following half century.
+
+
+{\kaiti
+Recommendation algorithms predict our preferences, and after pushing them to us, we genuinely begin to like them;
+
+advertising systems predict what we will buy, and after bombarding us with ads, we actually buy it;
+
+credit scores predict whether we will default, and then, because a low score cuts us off from loans, we become even more likely to default.
+}
+
+\vspace{1em}
+
+Zhuangzi told a story: a man spent his entire fortune learning the art of slaying dragons, only to discover, upon mastering the skill, that there were no dragons left in the world to slay. Goodhart's Law is the modern version of this tale. We design the perfect dragon-slaying metric, and then find that everyone is gaming the metric, while the dragon has quietly vanished from our world.
+
+\vspace{1em}
+
+Not slain---forgotten.
+
+The essence of Goodhart's Law is this: we think we are measuring reality, but in truth we are incentivizing people to manipulate the measuring instrument.
+The moment a metric becomes a target, it decouples from reality.
+
+\vspace{1em}
+
+Many of us misunderstand, assuming algorithms merely predict the future.
+In recommender systems, pricing engines, credit scoring, and other strong-feedback systems, algorithms often predict the future and participate in shaping it simultaneously.
+\textbf{The algorithm did not guess our fate; it may well have shaped our fate.}
+When the world is fully quantified by data, the world begins to contort itself to fit the data.
+
+\begin{thinkbox}
+We think we are using data to optimize our lives.
+
+But there is a real possibility that we are reshaping ourselves into something convenient for data to process.
+\end{thinkbox}
+
+\newpage
+\section{Epilogue: Who Sees the Deer, Who Points and Calls It a Horse}
+
+Back to Zhao Gao.
+
+In that imperial court, the real question was never whether it was a deer or a horse.
+
+The real question was: \textbf{who has the authority to define what it is?}
+
+The heart of data literacy is not learning to spot data's camouflage, but seeing clearly:
+
+Who is choosing the denominator? Who is choosing the time window? Who is choosing the resolution?
+
+That person is the Zhao Gao of our age.
+
+\vspace{1em}
+
+But we have also seen cause for hope---computing power is sufficient, and the \textbf{distance between people and data has vanished.}
+
+We no longer need to hear through someone else's lips that it is a horse.
+
+We can walk over and see for ourselves.
+
+This does not mean deception will disappear---Zhao Gao is still here, only in a different guise.
+
+But at least we now have a choice.
+
+The choice to venture deep into the data ourselves, to unearth the signals that have been buried.
+
+\vspace{1em}
+
+Laozi said: ``To know that you do not know is the best. Not to know that you do not know is a disease.''
+
+Knowing that you do not know is wisdom. Not knowing that you do not know is an affliction.
+
+When facing data, the greatest danger is not being deceived, but not knowing that we are being framed:
+
+Knowing the denominator can be chosen, we will not be easily swayed by a number;
+
+knowing the time window can be trimmed, we will not be easily frightened by a trend;
+
+knowing that flipping an axis can turn black into white, we will not be easily led astray by ``studies show'';
+
+knowing that resolution is a weapon of power, we will ask: who is watching? And can I see them too?
+
+\vspace{1em}
+
+This is not about doubting everything. It is about knowing \textbf{where to stay vigilant.}
+
+\vspace{1em}
+
+Zhao Gao has been dead for two thousand years, but the art of calling a deer a horse has never been lost.
+
+The good news is that now, we too can see the deer with our own eyes.
