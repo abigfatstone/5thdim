@@ -1,0 +1,60 @@
+<!--
+  Blog List Component for Framer
+  Fetches blog posts from api.5thdim.ai and renders a card list.
+  Embed this in a Framer HTML Embed on the /blog page.
+-->
+<div id="blog-list"></div>
+<style>
+  #blog-list { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 720px; margin: 0 auto; }
+  .bl-card { border-bottom: 1px solid #e5e5e5; padding: 2rem 0; cursor: pointer; transition: opacity 0.15s; }
+  .bl-card:hover { opacity: 0.75; }
+  .bl-card:first-child { padding-top: 0; }
+  .bl-meta { display: flex; gap: 0.75rem; align-items: center; margin-bottom: 0.5rem; font-size: 0.82rem; color: #888; }
+  .bl-series { background: #f0f7f7; color: #4a9a9a; padding: 2px 8px; border-radius: 3px; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.03em; }
+  .bl-title { font-size: 1.35rem; font-weight: 600; color: #1a1a1a; margin: 0 0 0.5rem; line-height: 1.35; }
+  .bl-desc { font-size: 0.95rem; color: #555; line-height: 1.6; margin: 0; }
+  .bl-tags { display: flex; gap: 0.5rem; margin-top: 0.75rem; flex-wrap: wrap; }
+  .bl-tag { font-size: 0.72rem; color: #999; border: 1px solid #e0e0e0; padding: 1px 6px; border-radius: 3px; }
+  .bl-empty { color: #999; padding: 3rem 0; text-align: center; }
+  .bl-loading { color: #aaa; padding: 2rem 0; text-align: center; }
+  @media (prefers-color-scheme: dark) {
+    .bl-card { border-color: #333; }
+    .bl-title { color: #e8e8e8; }
+    .bl-desc { color: #aaa; }
+    .bl-meta { color: #777; }
+    .bl-series { background: #1a2e2e; color: #6abfbf; }
+    .bl-tag { color: #777; border-color: #444; }
+  }
+</style>
+<script>
+(function() {
+  const API = 'https://api.5thdim.ai/api/content';
+  const container = document.getElementById('blog-list');
+  container.innerHTML = '<div class="bl-loading">Loading...</div>';
+
+  fetch(API + '/blog')
+    .then(r => r.json())
+    .then(data => {
+      const items = data.items || [];
+      if (items.length === 0) {
+        container.innerHTML = '<div class="bl-empty">No posts yet.</div>';
+        return;
+      }
+      container.innerHTML = items.map(item => {
+        const date = item.date ? new Date(item.date + 'T00:00:00').toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : '';
+        const series = item.series && item.series !== 'null' ? `<span class="bl-series">${item.series.replace(/-/g, ' ')}</span>` : '';
+        const tags = (item.tags || []).map(t => `<span class="bl-tag">${t}</span>`).join('');
+        return `
+          <article class="bl-card" onclick="window.location.href='/blog/${item.slug}'">
+            <div class="bl-meta">${date}${series ? ' ' + series : ''}</div>
+            <h2 class="bl-title">${item.title}</h2>
+            ${item.og_description ? `<p class="bl-desc">${item.og_description}</p>` : ''}
+            ${tags ? `<div class="bl-tags">${tags}</div>` : ''}
+          </article>`;
+      }).join('');
+    })
+    .catch(() => {
+      container.innerHTML = '<div class="bl-empty">Failed to load posts.</div>';
+    });
+})();
+</script>

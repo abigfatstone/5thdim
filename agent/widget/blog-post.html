@@ -1,0 +1,99 @@
+<!--
+  Blog Post Viewer for Framer
+  Reads slug from URL path (/blog/slug) and fetches full content from API.
+  Embed this in a Framer HTML Embed on the /blog/:slug page template.
+-->
+<div id="blog-post"></div>
+<style>
+  #blog-post { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 680px; margin: 0 auto; line-height: 1.75; }
+  .bp-header { margin-bottom: 2.5rem; }
+  .bp-meta { font-size: 0.85rem; color: #888; margin-bottom: 0.75rem; display: flex; gap: 0.75rem; align-items: center; }
+  .bp-series { background: #f0f7f7; color: #4a9a9a; padding: 2px 8px; border-radius: 3px; font-size: 0.75rem; text-transform: uppercase; }
+  .bp-title { font-size: 2rem; font-weight: 700; color: #1a1a1a; margin: 0 0 0.5rem; line-height: 1.25; }
+  .bp-title-zh { font-size: 1.1rem; color: #888; margin: 0; font-weight: 400; }
+  .bp-body { font-size: 1.05rem; color: #333; }
+  .bp-body h1, .bp-body h2 { color: #1a1a1a; margin-top: 2rem; }
+  .bp-body h2 { font-size: 1.4rem; }
+  .bp-body h3 { font-size: 1.15rem; color: #333; }
+  .bp-body blockquote { border-left: 3px solid #4a9a9a; margin: 1.5rem 0; padding: 0.75rem 1.25rem; color: #555; background: #fafafa; }
+  .bp-body pre { background: #f5f5f5; padding: 1rem; border-radius: 6px; overflow-x: auto; font-size: 0.9rem; }
+  .bp-body code { background: #f0f0f0; padding: 2px 5px; border-radius: 3px; font-size: 0.9em; }
+  .bp-body pre code { background: none; padding: 0; }
+  .bp-body a { color: #4a9a9a; text-decoration: underline; }
+  .bp-body ul, .bp-body ol { padding-left: 1.5rem; }
+  .bp-body li { margin-bottom: 0.4rem; }
+  .bp-body strong { color: #1a1a1a; }
+  .bp-body hr { border: none; border-top: 1px solid #e5e5e5; margin: 2rem 0; }
+  .bp-back { display: inline-block; margin-top: 2.5rem; font-size: 0.9rem; color: #4a9a9a; text-decoration: none; }
+  .bp-back:hover { text-decoration: underline; }
+  .bp-loading { color: #aaa; padding: 3rem 0; text-align: center; }
+  .bp-error { color: #999; padding: 3rem 0; text-align: center; }
+  @media (prefers-color-scheme: dark) {
+    .bp-title { color: #e8e8e8; }
+    .bp-body { color: #ccc; }
+    .bp-body h1, .bp-body h2, .bp-body strong { color: #e8e8e8; }
+    .bp-body blockquote { background: #1a1a1a; color: #aaa; }
+    .bp-body pre { background: #1a1a1a; }
+    .bp-body code { background: #222; }
+    .bp-body hr { border-color: #333; }
+    .bp-series { background: #1a2e2e; color: #6abfbf; }
+  }
+</style>
+<script>
+(function() {
+  const API = 'https://api.5thdim.ai/api/content';
+  const container = document.getElementById('blog-post');
+  container.innerHTML = '<div class="bp-loading">Loading...</div>';
+
+  // Extract slug from URL: /blog/my-slug → my-slug
+  const pathParts = window.location.pathname.split('/').filter(Boolean);
+  const slug = pathParts[pathParts.length - 1];
+
+  if (!slug || slug === 'blog') {
+    container.innerHTML = '<div class="bp-error">No post selected.</div>';
+    return;
+  }
+
+  fetch(API + '/blog/' + slug)
+    .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
+    .then(post => {
+      const date = post.date ? new Date(post.date + 'T00:00:00').toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : '';
+      const series = post.series && post.series !== 'null' ? `<span class="bp-series">${post.series.replace(/-/g, ' ')}</span>` : '';
+
+      // Simple markdown → HTML (handles common patterns)
+      let html = post.body
+        .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+        .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+        .replace(/^# (.+)$/gm, '<h1>$1</h1>')
+        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.+?)\*/g, '<em>$1</em>')
+        .replace(/^> (.+)$/gm, '<blockquote>$1</blockquote>')
+        .replace(/^- (.+)$/gm, '<li>$1</li>')
+        .replace(/(<li>.*<\/li>\n?)+/g, '<ul>$&</ul>')
+        .replace(/^---$/gm, '<hr>')
+        .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>')
+        .replace(/`([^`]+)`/g, '<code>$1</code>')
+        .replace(/\n\n/g, '</p><p>')
+        .replace(/^/, '<p>').replace(/$/, '</p>')
+        .replace(/<p><(h[1-3]|ul|ol|hr|blockquote)/g, '<$1')
+        .replace(/<\/(h[1-3]|ul|ol|blockquote)><\/p>/g, '</$1>')
+        .replace(/<p><\/p>/g, '');
+
+      container.innerHTML = `
+        <div class="bp-header">
+          <div class="bp-meta">${date}${series ? ' ' + series : ''}</div>
+          <h1 class="bp-title">${post.title}</h1>
+          ${post.title_zh ? `<p class="bp-title-zh">${post.title_zh}</p>` : ''}
+        </div>
+        <div class="bp-body">${html}</div>
+        <a href="/blog" class="bp-back">&larr; All posts</a>
+      `;
+
+      // Update page title
+      document.title = post.title + ' — 5thdim.ai';
+    })
+    .catch(() => {
+      container.innerHTML = '<div class="bp-error">Post not found. <a href="/blog" style="color:#4a9a9a">Back to blog</a></div>';
+    });
+})();
+</script>
